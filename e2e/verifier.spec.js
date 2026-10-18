@@ -119,13 +119,13 @@ test('standalone verifier checks exported proofs offline', async ({ page }, test
     await page.locator('#theme-toggle').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', initialTheme);
     await page.locator('#roots-file').setInputFiles(path.join(fixtureDir, 'roots.pem'));
-    await expect(page.locator('#roots-state')).toHaveText('TSA roots: roots.pem (replaces embedded roots).');
+    await expect(page.locator('#roots-state')).toHaveText('roots.pem');
     await page.locator('#roots-file').setInputFiles({
       name: 'oversized.pem',
       mimeType: 'application/x-pem-file',
       buffer: Buffer.alloc((1 << 20) + 1, 'x')
     });
-    await expect(page.locator('#roots-state')).toHaveText('TSA roots: Not configured.');
+    await expect(page.locator('#roots-state')).toHaveText('Not configured');
     await expect(page.locator('#roots-state')).not.toContainText('roots.pem');
     await page.locator('#roots-file').setInputFiles(path.join(fixtureDir, 'roots.pem'));
     await page.locator('#policy-oids').fill('1.2.3.4');
@@ -171,7 +171,7 @@ test('standalone verifier checks exported proofs offline', async ({ page }, test
     await expect(page.locator('#results')).toBeHidden();
     await expect(page.locator('#verify-form')).toBeVisible();
     await expect(page.locator('#policy-oids')).toHaveValue('1.2.3.4');
-    await expect(page.locator('#roots-state')).toHaveText('TSA roots: roots.pem (replaces embedded roots).');
+    await expect(page.locator('#roots-state')).toHaveText('roots.pem');
     await expect(page.locator('#settings')).toHaveAttribute('open', '');
     await expect(page.locator('#roots-file')).toHaveValue(/roots\.pem/);
     await expect(page.locator('#archive-file')).toHaveValue(/fixture\.zip/);

@@ -6,6 +6,7 @@
   <meta name="color-scheme" content="light dark">
   <meta name="referrer" content="no-referrer">
   <title>Location proof verification</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23173451' d='M0 0h32v32H0z'/%3E%3Ctext x='16' y='23' fill='white' font-family='Arial,sans-serif' font-size='23' font-weight='bold' text-anchor='middle'%3Em%3C/text%3E%3C/svg%3E">
   <style>
     :root {
       color-scheme: light;
@@ -32,11 +33,19 @@
       --warn: #fde68a;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; background: var(--page); color: var(--text); font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    main { max-width: 48rem; margin: 0 auto; padding: 32px; }
-    .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
-    #theme-toggle { border-color: transparent; font-size: 14px; font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }
-    h1 { margin: 0; font-size: 26px; line-height: 1.3; font-weight: 600; }
+    body { margin: 0; background: var(--page); color: var(--text); font: 16px/1.5 Arial, "Helvetica Neue", sans-serif; }
+    .service-header { color: #fff; background: #173451; border-bottom: 4px solid #527da8; }
+    .service-bar { max-width: 56rem; margin: 0 auto; padding: 8px 32px; display: flex; align-items: center; gap: 20px; }
+    .service-brand { font-size: 24px; font-weight: 700; letter-spacing: -.4px; }
+    .service-name { border-left: 1px solid #8b9daf; padding-left: 20px; font-size: 16px; }
+    .service-tools { display: flex; align-items: center; gap: 16px; margin-left: auto; font-size: 14px; }
+    .service-tools a { color: inherit; display: inline-flex; align-items: center; min-height: 44px; }
+    .service-header :focus-visible { outline-color: #fff; }
+    main { max-width: 56rem; margin: 0 auto; padding: 32px; }
+    .page-header { margin-bottom: 12px; }
+    #theme-toggle { color: inherit; border: 0; padding: 8px 0; background: transparent; font-size: 14px; font-weight: 400; }
+    #theme-toggle:hover { text-decoration: underline; text-underline-offset: 3px; }
+    h1 { margin: 0; font-size: 34px; line-height: 1.25; font-weight: 700; letter-spacing: -.5px; }
     h2 { margin: 0 0 16px; font-size: 20px; line-height: 1.4; font-weight: 600; }
     h3 { margin: 0 0 12px; font-size: 16px; font-weight: 600; }
     p { margin: 0 0 16px; }
@@ -48,11 +57,11 @@
     }
     button:hover:not(:disabled), input[type="file"]::file-selector-button:hover { background: var(--surface); }
     button:disabled { cursor: not-allowed; color: var(--muted); }
-    button.primary { color: var(--page); background: var(--text); border-color: var(--text); }
+    button.primary { color: var(--page); background: var(--link); border-color: var(--link); }
     button.primary:hover:not(:disabled) { opacity: .85; }
     button.primary:disabled { color: var(--muted); background: var(--surface); border-color: var(--line); }
     :focus-visible { outline: 2px solid var(--link); outline-offset: 3px; }
-    input[type="file"] { display: block; width: 100%; min-width: 0; font-size: 14px; }
+    input[type="file"] { display: block; width: 100%; min-width: 0; font-size: 16px; }
     input[type="file"]::file-selector-button { margin-right: 12px; color: var(--text); }
     input[type="number"], textarea, select {
       max-width: 100%; min-height: 44px; padding: 8px 10px;
@@ -67,31 +76,38 @@
     .help, .muted, footer { color: var(--muted); font-size: 14px; }
     .help { margin: 8px 0 0; }
     dd { overflow-wrap: anywhere; }
-    #intro { color: var(--muted); margin-bottom: 24px; }
-    #drop-area { margin-bottom: 20px; }
-    #drop-area > label { display: block; margin-bottom: 8px; }
+    #intro { color: var(--muted); margin-bottom: 28px; }
+    .form-section { border-top: 1px solid var(--line); padding: 18px 0; }
+    .section-title { display: flex; align-items: baseline; gap: 10px; font-size: 18px; margin: 0 0 14px; }
+    .step-number { color: var(--muted); font-size: 16px; font-variant-numeric: tabular-nums; }
     #drop-area.dragging { outline: 2px solid var(--link); outline-offset: 8px; }
     #archive-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 8px; font-size: 14px; }
     #archive-size { color: var(--muted); }
     #archive-meta button { margin-left: auto; }
-    .policy-state p { margin: 0 0 4px; font-size: 14px; overflow-wrap: anywhere; }
-    .online-option { display: flex; align-items: flex-start; gap: 10px; margin-top: 16px; }
+    .trust-summary { margin: 0; font-size: 14px; }
+    .trust-summary > div { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 12px; margin-bottom: 4px; }
+    .trust-summary dt { font-weight: 400; color: var(--muted); }
+    .online-option { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-top: 8px; }
     .online-option label { font-weight: 400; }
-    #network-help { margin-left: 28px; }
+    #network-help { margin: 0 0 0 28px; }
     details { margin: 16px 0; }
     summary { min-height: 44px; padding: 10px 0; cursor: pointer; color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+    #settings { margin: 8px 0 0; }
     .settings-fields { padding: 12px 0 4px; }
     .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
-    #run-state { margin: 16px 0 0; }
-    #run-state[data-kind="error"] { color: var(--danger); }
+    .submission-actions { border-top: 1px solid var(--line); margin-top: 0; padding-top: 20px; }
+    #run-state { margin: 16px 0 0; border-left: 3px solid var(--link); padding: 10px 12px; background: var(--surface); }
+    #run-state[data-kind="error"] { color: var(--danger); border-color: var(--danger); }
     .progress-line { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
     progress { flex: 1; min-width: 0; height: 8px; accent-color: var(--text); }
     #progress-count { font-size: 14px; }
     #error-detail pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; }
-    #results { margin-top: 24px; }
-    #result-title { margin-bottom: 8px; }
-    .outcome { margin: 0 0 8px; font-size: 20px; }
-    #outcome-message { margin-bottom: 24px; }
+    #results { margin-top: 28px; border-top: 2px solid var(--text); padding-top: 20px; }
+    #result-title { margin-bottom: 12px; font-size: 24px; }
+    .outcome { margin: 0 0 8px; font-size: 22px; }
+    #outcome-message { margin-bottom: 20px; }
+    .report-actions { margin: 0 0 24px; }
+    .report-conditions { margin-top: 28px; }
     .status { font-weight: 600; text-transform: capitalize; overflow-wrap: anywhere; }
     .status--verified { color: var(--good); }
     .status--invalid, .status--error { color: var(--danger); }
@@ -103,7 +119,7 @@
     #report-scope { margin-bottom: 8px; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
     caption { text-align: left; font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; overflow-wrap: anywhere; }
     th { font-weight: 600; }
     th:first-child, td:first-child { padding-left: 0; }
     #counts-body td, .count-heading { text-align: right; font-variant-numeric: tabular-nums; }
@@ -115,13 +131,15 @@
     .table-wrap { overflow-x: auto; }
     #locations-table { min-width: 35rem; }
     .digest-cell { max-width: 10rem; overflow-wrap: anywhere; }
+    .detail-action { padding: 8px 6px; }
     .mono, code, pre, textarea { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
     .pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; font-size: 14px; }
     .page-controls { display: flex; align-items: center; gap: 8px; }
     .empty-row { color: var(--muted); }
     #method { margin-top: 32px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 14px; }
     #method p { margin-bottom: 12px; }
-    footer { margin-top: 24px; }
+    .service-footer { border-top: 1px solid var(--line); margin-top: 16px; }
+    .footer-content { max-width: 56rem; padding: 20px 32px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; }
     dialog { width: min(48rem, calc(100% - 32px)); max-height: calc(100dvh - 32px); padding: 24px; border: 1px solid var(--line); border-radius: 2px; background: var(--page); color: var(--text); }
     dialog::backdrop { background: rgb(0 0 0 / 45%); }
     .dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
@@ -137,13 +155,25 @@
     .evidence-list li { margin-bottom: 12px; }
     .print-only { display: none; }
     [hidden] { display: none !important; }
-    @media (max-width: 540px) {
+    @media (max-width: 640px) {
+      .service-bar { padding: 4px 16px; gap: 12px; }
+      .service-brand { font-size: 21px; }
+      .service-name { display: none; }
+      .service-tools { gap: 12px; }
       main { padding: 24px 16px; }
-      h1 { font-size: 24px; }
-      .page-header { gap: 8px; }
-      .metadata > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+      h1 { font-size: 28px; }
+      #intro { margin-bottom: 20px; }
+      .form-section { padding: 16px 0; }
+      .trust-summary > div, .metadata > div { grid-template-columns: 8rem minmax(0, 1fr); gap: 12px; font-size: 14px; }
       .digest-cell, .digest-heading { display: none; }
-      #locations-table { min-width: 28rem; }
+      #locations-table { min-width: 0; table-layout: fixed; }
+      #locations-table th:nth-child(4), #locations-table td:nth-child(4), #locations-table th:nth-child(5), #locations-table td:nth-child(5) { display: none; }
+      #locations-table th:first-child { width: 28%; }
+      #locations-table th:nth-child(3) { width: 44%; }
+      #locations-table th:last-child { width: 28%; }
+      .detail-action { width: 100%; font-size: 14px; }
+      .pagination { align-items: flex-start; }
+      .footer-content { padding: 16px; }
       .evidence-dl { grid-template-columns: minmax(0, 1fr); gap: 4px; }
       .evidence-dl dd { margin-bottom: 8px; }
       dialog { padding: 16px; }
@@ -161,8 +191,8 @@
       h1 { font-size: 17pt; }
       h2 { font-size: 14pt; }
       .page-header { margin-bottom: 18pt; }
-      #verify-form, #intro, #theme-toggle, .report-actions, #location-results, #method, footer, dialog { display: none !important; }
-      #results { margin-top: 0; }
+      .service-header, #verify-form, #intro, .report-actions, #location-results, #method, footer, dialog { display: none !important; }
+      #results { margin-top: 0; border: 0; padding-top: 0; }
       .metadata > div { grid-template-columns: 10rem minmax(0, 1fr); break-inside: avoid; }
       .metadata, .report-note, #report-scope, table { font-size: 10pt; }
       th, td { padding: 6pt 4pt; }
@@ -181,59 +211,72 @@
   </script>
 </head>
 <body>
+  <header class="service-header">
+    <div class="service-bar">
+      <span class="service-brand">mytracker</span>
+      <span class="service-name">Proof verification</span>
+      <div class="service-tools">
+        <a href="https://github.com/prepaser/mytracker" target="_blank" rel="noopener noreferrer">Source code</a>
+        <button type="button" id="theme-toggle">Dark</button>
+      </div>
+    </div>
+  </header>
   <main>
     <header class="page-header">
       <h1>Location proof verification</h1>
-      <button type="button" id="theme-toggle">Dark</button>
     </header>
-    <p id="intro">Verify a mytracker location-proof archive.</p>
+    <p id="intro">Select an export file to check its integrity and timestamp proofs.</p>
 
     <form id="verify-form" aria-label="Verification inputs" novalidate>
-      <div id="drop-area">
-        <label for="archive-file">Proof archive</label>
+      <section id="drop-area" class="form-section" aria-labelledby="archive-label">
+        <h2 id="archive-label" class="section-title"><span class="step-number" aria-hidden="true">1.</span><label for="archive-file">Select an export file</label></h2>
         <input type="file" id="archive-file" accept=".zip,application/zip" aria-describedby="archive-help">
         <p id="archive-help" class="help">mytracker export ZIP, up to 64 MiB. Files stay in this browser.</p>
         <div id="archive-meta" hidden>
           <span id="archive-size"></span>
           <button type="button" id="clear-archive">Remove</button>
         </div>
-      </div>
+      </section>
 
-      <div class="policy-state" aria-label="Current trust settings" role="group">
-        <p id="roots-state" aria-live="polite"></p>
-        <p id="policy-state"></p>
-      </div>
-      <div class="online-option">
-        <input type="checkbox" id="online-check" aria-describedby="network-help">
-        <label for="online-check">Check Bitcoin anchors online</label>
-      </div>
-      <p id="network-help" class="help">Providers receive your IP address and block queries.</p>
-
-      <details id="settings">
-        <summary>Verification settings</summary>
-        <div class="settings-fields">
-          <div class="field">
-            <label for="roots-file">TSA trust roots</label>
-            <input type="file" id="roots-file" accept=".pem,.crt,.cer,.txt,application/x-pem-file" aria-describedby="roots-help">
-            <p id="roots-help" class="help">Public PEM bundle, up to 1 MiB. Replaces any embedded trust roots.</p>
-          </div>
-          <div class="field">
-            <label for="policy-oids">Allowed TSA policy OIDs</label>
-            <textarea id="policy-oids" rows="2" spellcheck="false" aria-describedby="oids-help"></textarea>
-            <p id="oids-help" class="help">One OID per line. An empty list leaves policy trust unconfigured.</p>
-          </div>
-          <div class="field">
-            <label for="providers">Bitcoin providers</label>
-            <textarea id="providers" rows="2" spellcheck="false" aria-describedby="providers-help"></textarea>
-            <p id="providers-help" class="help">One Esplora API base URL per line.</p>
-          </div>
-          <div class="field">
-            <label for="min-confirmations">Minimum confirmations</label>
-            <input type="number" id="min-confirmations" min="1" max="144" step="1" required>
-          </div>
+      <section class="form-section" aria-labelledby="conditions-title">
+        <h2 id="conditions-title" class="section-title"><span class="step-number" aria-hidden="true">2.</span>Review verification conditions</h2>
+        <dl class="trust-summary">
+          <div><dt>Trusted certificates</dt><dd id="roots-state" aria-live="polite"></dd></div>
+          <div><dt>Allowed policies</dt><dd id="policy-state"></dd></div>
+        </dl>
+        <p id="trust-help" class="help">Needed to confirm the timestamp authority.</p>
+        <div class="online-option">
+          <input type="checkbox" id="online-check" aria-describedby="network-help">
+          <label for="online-check">Check Bitcoin timestamps online</label>
         </div>
-      </details>
-      <div class="actions">
+        <p id="network-help" class="help">Providers receive your IP address and block queries.</p>
+
+        <details id="settings">
+          <summary>Verification settings</summary>
+          <div class="settings-fields">
+            <div class="field">
+              <label for="roots-file">TSA trust roots</label>
+              <input type="file" id="roots-file" accept=".pem,.crt,.cer,.txt,application/x-pem-file" aria-describedby="roots-help">
+              <p id="roots-help" class="help">Public PEM bundle, up to 1 MiB. Replaces any embedded trust roots.</p>
+            </div>
+            <div class="field">
+              <label for="policy-oids">Allowed TSA policy OIDs</label>
+              <textarea id="policy-oids" rows="2" spellcheck="false" aria-describedby="oids-help"></textarea>
+              <p id="oids-help" class="help">One OID per line. An empty list leaves policy trust unconfigured.</p>
+            </div>
+            <div class="field">
+              <label for="providers">Bitcoin providers</label>
+              <textarea id="providers" rows="2" spellcheck="false" aria-describedby="providers-help"></textarea>
+              <p id="providers-help" class="help">One Esplora API base URL per line.</p>
+            </div>
+            <div class="field">
+              <label for="min-confirmations">Minimum confirmations</label>
+              <input type="number" id="min-confirmations" min="1" max="144" step="1" required>
+            </div>
+          </div>
+        </details>
+      </section>
+      <div class="actions submission-actions">
         <button type="submit" id="verify-button" class="primary" disabled>Verify archive</button>
         <button type="button" id="cancel-button" hidden>Cancel</button>
       </div>
@@ -249,16 +292,14 @@
       <h2 id="result-title" tabindex="-1">Verification result</h2>
       <p class="outcome">Proof overall: <span id="summary-overall"></span></p>
       <p id="outcome-message"></p>
+      <div class="actions report-actions">
+        <button type="button" id="print-report" disabled>Print summary</button>
+        <button type="button" id="download-report" disabled>Download JSON</button>
+        <button type="button" id="new-verification">New verification</button>
+      </div>
       <dl class="metadata">
         <div><dt>Archive</dt><dd id="report-file"></dd></div>
         <div><dt>Checked at (UTC)</dt><dd id="report-time"></dd></div>
-        <div><dt>Archive integrity</dt><dd id="summary-integrity"></dd></div>
-        <div><dt>Location records</dt><dd id="summary-locations"></dd></div>
-        <div><dt>Archive entries</dt><dd id="summary-entries"></dd></div>
-        <div><dt>TSA trust roots</dt><dd id="report-roots"></dd></div>
-        <div><dt>Allowed TSA policies</dt><dd id="report-oids"></dd></div>
-        <div><dt>Bitcoin checks</dt><dd id="report-network"></dd></div>
-        <div><dt>Confirmation threshold</dt><dd id="report-confirmations"></dd></div>
       </dl>
 
       <p id="report-scope"></p>
@@ -267,12 +308,19 @@
         <thead><tr><th scope="col">Status</th><th scope="col" class="count-heading">Overall</th><th scope="col" class="count-heading">TSA</th><th scope="col" class="count-heading">OTS</th></tr></thead>
         <tbody id="counts-body"></tbody>
       </table>
+      <section class="report-conditions" aria-labelledby="report-conditions-title">
+        <h3 id="report-conditions-title">Verification conditions</h3>
+        <dl class="metadata">
+          <div><dt>Archive integrity</dt><dd id="summary-integrity"></dd></div>
+          <div><dt>Location records</dt><dd id="summary-locations"></dd></div>
+          <div><dt>Archive entries</dt><dd id="summary-entries"></dd></div>
+          <div><dt>TSA trust roots</dt><dd id="report-roots"></dd></div>
+          <div><dt>Allowed TSA policies</dt><dd id="report-oids"></dd></div>
+          <div><dt>Bitcoin checks</dt><dd id="report-network"></dd></div>
+          <div><dt>Confirmation threshold</dt><dd id="report-confirmations"></dd></div>
+        </dl>
+      </section>
       <p class="report-note">Archive integrity does not establish authorship. Timestamp evidence does not establish the reported location, identity or event time.</p>
-      <div class="actions report-actions">
-        <button type="button" id="print-report" disabled>Print summary</button>
-        <button type="button" id="download-report" disabled>Download JSON</button>
-        <button type="button" id="new-verification">New verification</button>
-      </div>
 
       <section id="location-results" aria-labelledby="locations-title">
         <div class="table-toolbar">
@@ -312,13 +360,13 @@
     <details id="method">
       <summary>Method and limitations</summary>
       <p>This verifier checks a mytracker proof export, including archive entry hashes, canonical location digests and the attached TSA and OTS proofs. Historical verification labels are not accepted as fresh evidence.</p>
-      <p>TSA checks use the selected trust roots, allowed policies and archived nonce. This verifier does not use the browser or OS certificate store and does not check certificate revocation.</p>
+      <p>Time-Stamping Authority (TSA) checks use the selected trust roots, allowed policies and archived nonce. This verifier does not use the browser or OS certificate store and does not check certificate revocation.</p>
       <p>Offline OTS checks cannot confirm a Bitcoin anchor. Online checks require at least two agreeing providers and the selected confirmation threshold. It does not validate parent links, cumulative chainwork or the full Bitcoin chain. Providers must allow browser CORS requests.</p>
       <p>A timestamp supports that a digest existed by an attested time. It does not authenticate the archive author or establish that the reported location, identity or event time is true. Obtain this verifier and trust roots from sources you trust.</p>
       <p>Canonical hashing covers user, device, time, coordinates and supported measurements, not every payload field. See the <a href="https://github.com/prepaser/mytracker/blob/main/docs/proofs.md" target="_blank" rel="noopener noreferrer">proof format</a>, <a href="https://www.rfc-editor.org/rfc/rfc3161" target="_blank" rel="noopener noreferrer">RFC 3161</a> and <a href="https://opentimestamps.org/" target="_blank" rel="noopener noreferrer">OpenTimestamps</a>.</p>
     </details>
-    <footer>mytracker · <a href="https://github.com/prepaser/mytracker" target="_blank" rel="noopener noreferrer">Source</a></footer>
   </main>
+  <footer class="service-footer"><div class="footer-content"><span>mytracker</span><span>AGPL-3.0-only</span></div></footer>
 
   <dialog id="detail-dialog" aria-labelledby="detail-title">
     <div class="dialog-head"><h2 id="detail-title">Location details</h2><button type="button" id="close-detail">Close</button></div>
@@ -372,11 +420,11 @@
 
       function updatePolicyState() {
         document.getElementById('roots-state').textContent = selectedRoots
-          ? 'TSA roots: ' + selectedRoots.name + ' (replaces embedded roots).'
-          : embeddedRoots ? 'TSA roots: Embedded bundle.' : 'TSA roots: Not configured.';
+          ? selectedRoots.name : embeddedRoots ? 'Embedded bundle' : 'Not configured';
         const oids = splitLines(document.getElementById('policy-oids').value);
         document.getElementById('policy-state').textContent = oids.length
-          ? 'Allowed TSA policies: ' + oids.join(', ') : 'Allowed TSA policies: Not configured.';
+          ? oids.join(', ') : 'Not configured';
+        document.getElementById('trust-help').hidden = Boolean((selectedRoots || embeddedRoots) && oids.length);
       }
       updatePolicyState();
 
@@ -683,6 +731,7 @@
           const cell = document.createElement('td');
           const action = document.createElement('button');
           action.type = 'button';
+          action.className = 'detail-action';
           action.textContent = 'Details';
           action.setAttribute('aria-label', 'Details for location ' + item.id);
           action.addEventListener('click', () => openDetail(index));

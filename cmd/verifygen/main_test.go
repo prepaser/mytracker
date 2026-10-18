@@ -17,7 +17,7 @@ func TestGeneratesSelfContainedVerifier(t *testing.T) {
 		t.Fatal(err)
 	}
 	html := string(data)
-	for _, forbidden := range []string{"{{LUCIDE_JS}}", "{{WORKER_JS_JSON}}", "{{DEFAULT_OPTIONS_JSON}}", "<script src=", "<link rel=\"stylesheet\" href=\"http"} {
+	for _, forbidden := range []string{"{{LUCIDE_JS}}", "{{WORKER_JS_JSON}}", "{{DEFAULT_OPTIONS_JSON}}", "data-lucide", "lucide.min.js", "<script src=", "<link rel=\"stylesheet\" href=\"http"} {
 		if strings.Contains(html, forbidden) {
 			t.Fatalf("unresolved or external resource: %s", forbidden)
 		}

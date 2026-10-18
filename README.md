@@ -2,6 +2,8 @@
 
 Proof-capable personal location tracker. Receives [OwnTracks](https://owntracks.org/) HTTP location updates, timestamps each point with external **RFC 3161 TSA** and **OpenTimestamps**, and provides a web UI for monitoring and verification.
 
+Verify exported proof archives with the [standalone browser verifier](https://prepaser.github.io/mytracker).
+
 ## Features
 
 - OwnTracks HTTP endpoint (`POST /pub`) with Basic Auth

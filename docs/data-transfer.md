@@ -94,9 +94,11 @@ go run ./cmd/verifygen -out index.html
 go run ./cmd/verifygen -out index.html -tsa-roots tsa-roots.pem -tsa-policy 1.2.3.4
 ```
 
-Open the included `index.html` directly in a browser, or serve it as a static file. The generator embeds the Go WebAssembly verifier, its matching runtime, styles, scripts, and icons; no mytracker server or companion files are required. `make verifier` regenerates this file from source. `make verifier-test` runs desktop/mobile checks using the existing `e2e` dependencies.
+Open the included `index.html` directly in a browser, or serve it as a static file. The generator embeds the Go WebAssembly verifier, its matching runtime, styles, and UI scripts; no mytracker server or companion files are required. `make verifier` regenerates this file from source. `make verifier-test` runs desktop/mobile checks using the existing `e2e` dependencies.
 
-The first page introduces the record-to-digest-to-timestamp structure for recipients unfamiliar with mytracker. It explains trust assumptions, the difference between integrity and authorship, and why timestamp evidence does not authenticate a reported location, identity, or event time. Expandable references describe the archive layout, canonical fields, result meanings, and offline/online verification limits; links point to the protocol references and verifier source.
+The verifier follows a single-column file-to-result flow: choose an export archive, review the visible trust and online-check policy, run verification, and inspect the report. Verification methods, trust assumptions, and offline/online limits remain available under **Method and limitations** instead of preceding the file input.
+
+After verification, **Print summary** produces a compact report for the whole run. It includes archive and location counts, status counts across all records, the policy actually used, and the verification time. It does not print individual location rows; use the on-screen report or JSON download when record-level details are required.
 
 Select a current export ZIP and public TSA trust roots. Entry hashes and canonical location digests are checked locally before proof verification. Checksums establish archive consistency, not authenticity, and archived verification results are not accepted as fresh evidence. Browser verification accepts at most 64 MiB compressed and 256 MiB decompressed; use the CLI for larger archives.
 

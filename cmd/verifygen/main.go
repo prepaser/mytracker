@@ -135,17 +135,8 @@ func run(args []string) error {
 	if err != nil {
 		return err
 	}
-	icons, err := os.ReadFile(filepath.Join(repo, "internal", "web", "static", "vendor", "lucide", "lucide.min.js"))
-	if err != nil {
-		return err
-	}
-	license, err := os.ReadFile(filepath.Join(repo, "internal", "web", "static", "vendor", "lucide", "LICENSE"))
-	if err != nil {
-		return err
-	}
-	icons = append([]byte("/*\n"+string(license)+"\n*/\n"), icons...)
 	html := string(template)
-	for _, item := range [][2]string{{"{{LUCIDE_JS}}", string(icons)}, {"{{WORKER_JS_JSON}}", workerJSON}, {"{{DEFAULT_OPTIONS_JSON}}", string(options)}} {
+	for _, item := range [][2]string{{"{{WORKER_JS_JSON}}", workerJSON}, {"{{DEFAULT_OPTIONS_JSON}}", string(options)}} {
 		if strings.Count(html, item[0]) != 1 {
 			return fmt.Errorf("invalid verifier template: %s", item[0])
 		}

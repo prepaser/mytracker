@@ -1,0 +1,39 @@
+# Deployment settings only. Changes require a restart.
+# Credentials, proof providers, MQTT, retention, and backups are managed in the web UI.
+
+data_dir = "data"
+
+# HTTP listener. Use an empty string for HTTPS-only operation with native TLS.
+listen_addr = "127.0.0.1:8080"
+# Used only when certificates or automatic HTTPS are configured.
+https_listen_addr = ":443"
+
+# Manual TLS: set both PEM file paths. Leave auto_https_domains empty.
+tls_cert_file = ""
+tls_key_file = ""
+
+# Automatic HTTPS: set domains, e.g. ["tracker.example.com"], and listen_addr = ":80".
+# Public ports 80/443 must reach the HTTP/HTTPS listeners. Leave TLS file paths empty.
+auto_https_domains = []
+
+# Set the external URL in production, e.g. "https://tracker.example.com".
+# Behind a reverse proxy, leave native TLS disabled and proxy to listen_addr.
+public_url = ""
+# Proxy IPs/CIDRs allowed to supply forwarded headers. Loopback is always trusted.
+trusted_proxies = []
+
+login_rate_limit = 10
+login_rate_window = "5m"
+pub_rate_limit = 120
+pub_rate_window = "1m"
+share_rate_limit = 120
+share_rate_window = "1m"
+rate_limit_max_ips = 10000
+
+stamp_workers = 4
+# Maximum attempts per stamp job, including the initial attempt.
+stamp_retries = 3
+
+# Compressed import size in bytes (64 MiB).
+import_max_bytes = 67108864
+log_level = "info"

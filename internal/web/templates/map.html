@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mytracker · Map</title>
+{{template "theme-head" .}}
+<link rel="stylesheet" href="/static/leaflet/leaflet.css">
+<link rel="stylesheet" href="/static/app/app.css">
+</head>
+<body class="map-shell">
+{{template "admin-nav" .}}
+<main class="map-content">
+  <header class="toolbar" id="map-filters">
+    <div class="toolbar-title"><h1>Map</h1><span id="info" class="muted">Loading track</span></div>
+    <div class="toolbar-fields" id="filter-fields">
+      <div class="field"><label for="hours">Period</label><select id="hours"><option value="6">6 hours</option><option value="24" selected>24 hours</option><option value="168">7 days</option><option value="720">30 days</option><option value="0">All</option><option value="custom">Custom</option></select></div>
+      <div class="field custom-period" id="custom-period" hidden><label for="from">From</label><input id="from" type="datetime-local" step="1"></div>
+      <div class="field custom-period" id="custom-period-to" hidden><label for="to">To</label><input id="to" type="datetime-local" step="1"></div>
+      <div class="field"><label for="user">User</label><select id="user"><option value="">All</option></select></div>
+      <div class="field"><label for="device">Device</label><select id="device"><option value="">All</option></select></div>
+      <div class="field"><label for="limit">Point limit</label><select id="limit"><option value="1000">1,000</option><option value="5000">5,000</option><option value="10000" selected>10,000</option></select></div>
+    </div>
+    <div class="toolbar-actions">
+      <button id="filter-toggle" type="button" class="icon-button mobile-only" aria-controls="filter-fields" aria-expanded="false" aria-label="Toggle filters"><i data-lucide="sliders-horizontal"></i></button>
+      <button id="fit-track" type="button" class="icon-text-button" aria-label="Fit track"><i data-lucide="scan"></i><span>Fit track</span></button>
+      <button id="reload" type="button" class="icon-button" aria-label="Reload track"><i data-lucide="refresh-cw"></i></button>
+    </div>
+  </header>
+  <div class="map-canvas">
+    <div id="map" aria-label="Location map"></div>
+    <div class="map-overlay" id="map-state" role="status"><i data-lucide="loader-circle" class="spin"></i><span>Loading track</span></div>
+    <div class="map-overlay geofence-state" id="geofence-state" role="alert" hidden></div>
+  </div>
+</main>
+{{template "proof-dialog" .}}
+{{template "ui-hosts" .}}
+<script type="application/json" id="cfg">{"identities":{{json .Identities}},"tileURL":{{json .TileURL}},"tileAttr":{{json .TileAttr}},"csrf":{{json .CSRF}},"lastLat":{{json .LastLat}},"lastLon":{{json .LastLon}}}</script>
+{{template "common-scripts" .}}
+<script src="/static/leaflet/leaflet.js"></script>
+<script src="/static/app/map-geometry.js"></script>
+<script src="/static/app/verify.js"></script>
+<script src="/static/app/map.js"></script>
+</body>
+</html>

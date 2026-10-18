@@ -1,0 +1,1144 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Location proof verification</title>
+  <meta name="referrer" content="no-referrer">
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f3f5f2;
+      --surface: #fff;
+      --surface-muted: #f7f9f7;
+      --line: #dce3de;
+      --line-strong: #c9d3cc;
+      --text: #202923;
+      --muted: #647168;
+      --faint: #89958d;
+      --accent: #236c52;
+      --accent-hover: #19583f;
+      --accent-soft: #e5f2eb;
+      --focus: #32866a;
+      --danger: #a43b35;
+      --danger-soft: #fff0ee;
+      --warn: #88600c;
+      --warn-soft: #fff5da;
+      --good: #236c52;
+      --valid: #356a76;
+      --valid-soft: #e5f1f3;
+      --good-soft: #e5f2eb;
+      --info: #565e87;
+      --info-soft: #eeeff9;
+      --shadow: 0 18px 60px rgb(18 30 23 / 18%);
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --page: #171c19;
+      --surface: #202723;
+      --surface-muted: #252e29;
+      --line: #35413a;
+      --line-strong: #46554b;
+      --text: #e6ece7;
+      --muted: #a6b1a9;
+      --faint: #819087;
+      --accent: #8bd0ad;
+      --accent-hover: #a7e0c2;
+      --accent-soft: #263c30;
+      --focus: #8bd0ad;
+      --danger: #ffaaa1;
+      --danger-soft: #422a28;
+      --warn: #f0c56b;
+      --warn-soft: #403821;
+      --good: #8bd0ad;
+      --valid: #91cad2;
+      --valid-soft: #263b3e;
+      --good-soft: #263c30;
+      --info: #c0c4f2;
+      --info-soft: #32344b;
+      --shadow: 0 18px 60px rgb(0 0 0 / 42%);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--page);
+      color: var(--text);
+      font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button, input, textarea, select { font: inherit; }
+    button, label, select { -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .topbar {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 0 max(24px, calc((100vw - 1240px) / 2));
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--line-strong);
+      border-radius: 7px;
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .brand-mark svg { width: 17px; height: 17px; }
+    .brand-name { font-weight: 650; font-size: 14px; }
+    .brand-separator { color: var(--line-strong); }
+    .brand-product { color: var(--muted); font-size: 13px; }
+    .topbar-actions { display: flex; align-items: center; gap: 12px; }
+    .verifier-link { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; font-weight: 600; }
+    a { color: var(--accent); text-underline-offset: 3px; }
+    .icon-button {
+      display: inline-grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .icon-button:hover { background: var(--surface-muted); color: var(--text); }
+    .icon-button svg { width: 17px; height: 17px; }
+    main { width: min(1240px, 100%); margin: 0 auto; padding: 42px 28px 64px; }
+    .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 30px; }
+    .eyebrow { margin: 0 0 7px; color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 6px; font-size: 28px; line-height: 1.2; font-weight: 650; }
+    .subtitle { margin: 0; color: var(--muted); }
+    .page-heading .subtitle { max-width: 800px; font-size: 15px; }
+    .proof-guide { margin-bottom: 28px; }
+    .proof-guide h2 { margin-bottom: 14px; }
+    .proof-flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; padding: 0; margin: 0 0 20px; list-style: none; }
+    .proof-flow li { position: relative; min-width: 0; padding: 12px 0; border-top: 1px solid var(--line-strong); }
+    .flow-title { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 13px; font-weight: 650; }
+    .flow-title svg { width: 17px; height: 17px; flex: 0 0 auto; color: var(--accent); }
+    .proof-flow p { margin: 0; color: var(--muted); font-size: 12px; }
+    .proof-paths { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+    .proof-paths article { min-width: 0; }
+    .proof-paths h3 { margin-bottom: 6px; font-size: 14px; font-weight: 650; }
+    .proof-paths p { margin-bottom: 14px; color: var(--muted); font-size: 13px; }
+    .trust-boundary { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; margin: 0 0 16px; border-left: 2px solid var(--warn); background: var(--warn-soft); font-size: 12px; }
+    .trust-boundary svg { width: 17px; height: 17px; flex: 0 0 auto; margin-top: 1px; color: var(--warn); }
+    .reference { border-top: 1px solid var(--line); }
+    .reference:last-of-type { border-bottom: 1px solid var(--line); }
+    .reference summary { min-height: 44px; padding: 11px 0; cursor: pointer; font-size: 13px; font-weight: 600; }
+    .reference-body { padding: 0 0 18px; font-size: 13px; }
+    .reference-body p { margin-bottom: 12px; }
+    .reference-body h3 { margin: 16px 0 6px; font-size: 14px; }
+    .reference-body code { font-size: 12px; overflow-wrap: anywhere; }
+    .reference-table { table-layout: auto; margin: 8px 0 12px; }
+    .reference-table th, .reference-table td { overflow-wrap: anywhere; }
+    .reference-table th:first-child, .reference-table td:first-child { width: 36%; }
+    .reference-table th { text-transform: none; white-space: normal; }
+    .method-sources { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 12px 0 0; margin: 0; list-style: none; font-size: 12px; }
+    #verification { scroll-margin-top: 20px; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(320px, .88fr); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+    .archive-pane, .policy-pane { min-width: 0; padding: 26px; }
+    .policy-pane { border-left: 1px solid var(--line); }
+    .section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+    .section-heading .eyebrow { margin-bottom: 4px; }
+    h2 { margin: 0; font-size: 17px; line-height: 1.35; font-weight: 640; }
+    .limit-label { padding: 4px 8px; border: 1px solid var(--line); border-radius: 5px; color: var(--muted); font-size: 11px; white-space: nowrap; }
+    .drop-area {
+      min-height: 210px;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 7px;
+      background: var(--surface-muted);
+      text-align: center;
+      transition: border-color .15s ease, background .15s ease;
+    }
+    .drop-area.dragging { border-color: var(--accent); background: var(--accent-soft); }
+    .drop-target { display: grid; justify-items: center; width: 100%; cursor: pointer; }
+    .drop-icon { display: grid; place-items: center; width: 42px; height: 42px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--accent); }
+    .drop-icon svg { width: 20px; height: 20px; }
+    .drop-title { margin-bottom: 3px; font-weight: 620; }
+    .drop-copy { margin-bottom: 15px; color: var(--muted); font-size: 12px; }
+    .select-chip { display: inline-flex; align-items: center; min-height: 32px; padding: 0 11px; border: 1px solid var(--line-strong); border-radius: 5px; background: var(--surface); font-size: 12px; font-weight: 600; }
+    .select-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    .selected-file { display: flex; align-items: center; gap: 10px; min-width: 0; margin-top: 12px; padding: 10px 11px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+    .selected-file > svg { width: 17px; height: 17px; flex: 0 0 auto; color: var(--good); }
+    .file-copy { display: grid; min-width: 0; flex: 1; }
+    .file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 570; }
+    .file-size { color: var(--muted); font-size: 11px; }
+    .privacy-note { display: flex; align-items: flex-start; gap: 10px; margin: 16px 0 0; padding: 12px 13px; border-left: 2px solid var(--accent); background: var(--accent-soft); color: var(--text); font-size: 12px; }
+    .privacy-note svg { width: 16px; height: 16px; flex: 0 0 auto; margin-top: 1px; color: var(--accent); }
+    .privacy-note strong { color: var(--text); font-weight: 620; }
+    .policy-fields { display: grid; gap: 15px; }
+    .field { display: grid; gap: 6px; min-width: 0; }
+    .field-label { font-size: 12px; font-weight: 620; }
+    .field-help { margin: 0; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+    textarea, input[type="number"] {
+      width: 100%;
+      min-height: 38px;
+      padding: 8px 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 5px;
+      background: var(--surface);
+      color: var(--text);
+    }
+    textarea { min-height: 65px; resize: vertical; font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    textarea::placeholder { color: var(--faint); }
+    input[type="number"] { max-width: 120px; }
+    input[type="file"] { max-width: 100%; color: var(--muted); font-size: 12px; }
+    input[type="file"]::file-selector-button { min-height: 30px; margin-right: 9px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--surface-muted); color: var(--text); cursor: pointer; }
+    .two-fields { display: grid; grid-template-columns: minmax(0, 1fr) 120px; gap: 16px; align-items: end; }
+    .online-option { display: grid; grid-template-columns: 16px 1fr; gap: 9px; align-items: start; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-muted); }
+    .online-option input { width: 15px; height: 15px; margin: 2px 0 0; accent-color: var(--accent); }
+    .online-title { display: block; font-size: 12px; font-weight: 620; }
+    .online-copy { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .actions { display: flex; align-items: center; gap: 9px; margin-top: 19px; }
+    .primary-button, .secondary-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 0 14px;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    .primary-button { background: var(--accent); color: #fff; }
+    :root[data-theme="dark"] .primary-button { color: #142019; }
+    .primary-button:hover:not(:disabled) { background: var(--accent-hover); }
+    .secondary-button { border-color: var(--line-strong); background: var(--surface); color: var(--text); }
+    .secondary-button:hover:not(:disabled) { background: var(--surface-muted); }
+    button:disabled { opacity: .48; cursor: not-allowed; }
+    .primary-button svg, .secondary-button svg { width: 15px; height: 15px; }
+    .run-state { display: flex; align-items: center; gap: 8px; min-height: 22px; margin-top: 14px; color: var(--muted); font-size: 11px; }
+    .run-state svg { width: 15px; height: 15px; flex: 0 0 auto; }
+    .run-state[data-kind="error"] { color: var(--danger); }
+    .run-state[data-kind="success"] { color: var(--good); }
+    .progress-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; margin-top: 7px; }
+    progress { width: 100%; height: 5px; border: 0; border-radius: 5px; background: var(--line); accent-color: var(--accent); }
+    progress::-webkit-progress-bar { border-radius: 5px; background: var(--line); }
+    progress::-webkit-progress-value { border-radius: 5px; background: var(--accent); }
+    progress::-moz-progress-bar { border-radius: 5px; background: var(--accent); }
+    .progress-count { color: var(--muted); font: 11px ui-monospace, SFMono-Regular, Consolas, monospace; white-space: nowrap; }
+    .scope-note { display: flex; gap: 9px; margin: 15px 1px 0; color: var(--muted); font-size: 11px; }
+    .scope-note svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 1px; }
+    .results { margin-top: 30px; }
+    .results-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin-bottom: 14px; }
+    .results-head h2 { font-size: 18px; }
+    .results-actions { display: flex; align-items: center; gap: 8px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 7px; background: var(--surface); }
+    .summary-item { min-width: 0; padding: 13px 15px; }
+    .summary-item + .summary-item { border-left: 1px solid var(--line); }
+    .summary-label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 11px; }
+    .summary-value { display: flex; align-items: center; gap: 7px; min-width: 0; font-size: 13px; font-weight: 630; }
+    .summary-value .status { max-width: 100%; }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 22px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--surface-muted);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1.3;
+      text-transform: capitalize;
+      white-space: nowrap;
+    }
+    .status--verified { background: var(--good-soft); color: var(--good); }
+    .status--valid { background: var(--valid-soft); color: var(--valid); }
+    .status--degraded, .status--pending { background: var(--warn-soft); color: var(--warn); }
+    .status--inconclusive { background: var(--info-soft); color: var(--info); }
+    .status--invalid, .status--error { background: var(--danger-soft); color: var(--danger); }
+    .status--missing, .status--unknown { background: var(--surface-muted); color: var(--muted); }
+    .integrity-note { margin: 10px 0 0; color: var(--muted); font-size: 11px; }
+    .table-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 22px 0 9px; }
+    .table-toolbar h3 { margin: 0; font-size: 13px; font-weight: 640; }
+    .filter-control { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; }
+    .filter-control select { min-height: 32px; padding: 0 27px 0 9px; border: 1px solid var(--line-strong); border-radius: 5px; background: var(--surface); color: var(--text); }
+    .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); }
+    table { width: 100%; min-width: 0; table-layout: fixed; border-collapse: collapse; text-align: left; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    th { background: var(--surface-muted); color: var(--muted); font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+    td { font-size: 12px; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .mono { font: 11px ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .digest-cell { max-width: 250px; overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
+    .detail-button { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--muted); cursor: pointer; }
+    .detail-button:hover { border-color: var(--line); background: var(--surface-muted); color: var(--text); }
+    .detail-button svg { width: 15px; height: 15px; }
+    .empty-row { padding: 28px 14px; color: var(--muted); text-align: center; }
+    .pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 9px; color: var(--muted); font-size: 11px; }
+    .page-controls { display: flex; align-items: center; gap: 7px; }
+    .page-controls .icon-button { width: 30px; height: 30px; }
+    .empty-state { display: grid; justify-items: center; padding: 46px 18px; border: 1px dashed var(--line-strong); border-radius: 7px; background: var(--surface); text-align: center; }
+    .empty-state > svg { width: 23px; height: 23px; margin-bottom: 11px; color: var(--faint); }
+    .empty-state strong { margin-bottom: 3px; font-size: 13px; font-weight: 620; }
+    .empty-state span { color: var(--muted); font-size: 11px; }
+    dialog { width: min(680px, calc(100% - 28px)); max-height: min(82vh, 780px); padding: 0; overflow: hidden; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+    dialog::backdrop { background: rgb(14 20 16 / 55%); backdrop-filter: blur(2px); }
+    .dialog-head { position: sticky; z-index: 1; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 17px 20px; border-bottom: 1px solid var(--line); background: var(--surface); }
+    .dialog-head h2 { overflow-wrap: anywhere; }
+    .dialog-body { max-height: calc(82vh - 70px); padding: 18px 20px 24px; overflow: auto; }
+    .detail-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .detail-id { font-size: 14px; font-weight: 650; }
+    .detail-digest { width: 100%; overflow-wrap: anywhere; color: var(--muted); }
+    .evidence-section { padding: 17px 0; border-bottom: 1px solid var(--line); }
+    .evidence-section:last-child { border-bottom: 0; }
+    .evidence-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .evidence-title h3 { margin: 0; font-size: 13px; font-weight: 650; }
+    .evidence-dl { display: grid; grid-template-columns: minmax(125px, .7fr) minmax(0, 1.7fr); gap: 7px 13px; margin: 0; font-size: 11px; }
+    .evidence-dl dt { color: var(--muted); overflow-wrap: anywhere; }
+    .evidence-dl dd { min-width: 0; margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .evidence-dl dd > .evidence-dl { margin-top: 2px; }
+    .evidence-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .evidence-list > li { padding: 10px; border: 1px solid var(--line); border-radius: 5px; }
+    .dialog-empty { margin: 0; color: var(--muted); font-size: 11px; }
+    [hidden] { display: none !important; }
+    @media (max-width: 820px) {
+      main { padding: 32px 20px 48px; }
+      .proof-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; }
+      .workspace { grid-template-columns: minmax(0, 1fr); }
+      .policy-pane { border-top: 1px solid var(--line); border-left: 0; }
+      .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .summary-item:nth-child(3) { border-top: 1px solid var(--line); border-left: 0; }
+      .summary-item:nth-child(4) { border-top: 1px solid var(--line); }
+      .status { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+      tbody td:first-child { overflow-wrap: anywhere; }
+    }
+    @media (max-width: 540px) {
+      .topbar { min-height: 58px; padding: 0 15px; }
+      main { padding: 27px 14px 38px; }
+      .page-heading { align-items: flex-start; margin-bottom: 20px; }
+      .brand-product, .brand-separator { display: none; }
+      .topbar-actions { gap: 9px; }
+      .proof-flow { gap: 0 16px; }
+      .proof-paths { grid-template-columns: minmax(0, 1fr); gap: 0; }
+      .reference-table th:nth-child(2), .reference-table td:nth-child(2) { display: table-cell; }
+      .icon-button, .detail-button, .page-controls .icon-button { width: 44px; height: 44px; }
+      .primary-button, .secondary-button, .select-chip, .filter-control select { min-height: 44px; }
+      input[type="file"]::file-selector-button { min-height: 44px; }
+      h1 { font-size: 24px; }
+      .archive-pane, .policy-pane { padding: 19px 16px; }
+      .drop-area { min-height: 190px; }
+      .two-fields { grid-template-columns: minmax(0, 1fr) 92px; gap: 11px; }
+      .results { margin-top: 24px; }
+      .results-head { align-items: flex-start; }
+      .results-head h2 { font-size: 16px; }
+      .summary-item { padding: 11px; }
+      .table-toolbar { align-items: flex-start; }
+      .table-toolbar h3 { padding-top: 8px; }
+      th, td { padding: 9px 10px; }
+      table th:nth-child(2), table td:nth-child(2) { display: none; }
+      .pagination { align-items: flex-start; }
+      .evidence-dl { grid-template-columns: minmax(100px, .7fr) minmax(0, 1.3fr); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+    }
+  </style>
+  <script>
+    (() => {
+      let theme;
+      try { theme = localStorage.getItem('verifyui-theme'); } catch (_) {}
+      if (theme !== 'light' && theme !== 'dark') {
+        theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
+  <script>{{LUCIDE_JS}}</script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" aria-label="Location proof verifier">
+      <span class="brand-mark" aria-hidden="true"><i data-lucide="shield-check"></i></span>
+      <span class="brand-name">Location proofs</span>
+      <span class="brand-separator" aria-hidden="true">/</span>
+      <span class="brand-product">Independent verification</span>
+    </div>
+    <div class="topbar-actions">
+      <a class="verifier-link" href="#verification">Verify</a>
+      <button type="button" id="theme-toggle" class="icon-button" aria-label="Switch theme" title="Switch theme"><i data-lucide="moon"></i></button>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Timestamp evidence</p>
+        <h1>Location proof verification</h1>
+        <p class="subtitle">A timestamp can support that particular data existed by an attested time. It cannot prove that the reported location, event time, or identity is true.</p>
+      </div>
+    </div>
+
+    <section class="proof-guide" aria-labelledby="proof-guide-title">
+      <h2 id="proof-guide-title">One record, two time anchors</h2>
+      <ol class="proof-flow">
+        <li><div class="flow-title"><i data-lucide="map-pin" aria-hidden="true"></i><span>1. Location record</span></div><p>Reported identity, time, coordinates, and measurements.</p></li>
+        <li><div class="flow-title"><i data-lucide="hash" aria-hidden="true"></i><span>2. Canonical SHA-256</span></div><p>Stable field order and rounding produce a repeatable digest.</p></li>
+        <li><div class="flow-title"><i data-lucide="clock-3" aria-hidden="true"></i><span>3. External timestamps</span></div><p>A signed TSA response and an OTS hash commitment.</p></li>
+        <li><div class="flow-title"><i data-lucide="scan-search" aria-hidden="true"></i><span>4. Fresh proof checks</span></div><p>Recompute the digest and examine the actual proof files.</p></li>
+      </ol>
+      <div class="proof-paths">
+        <article><h3>TSA: an authority's signed time</h3><p>The <code>.tsr</code> response signs the digest and generation time. Signature, certificate chain, nonce consistency, and policy checks depend on the TSA roots and policies you trust. Certificate validity is checked at that generation time; revocation is not checked.</p></article>
+        <article><h3>OTS: a Bitcoin commitment</h3><p>The <code>.ots</code> proof connects the digest to a Bitcoin Merkle commitment. Online checks require at least two agreeing providers with enough confirmations. Offline checks cannot confirm a Bitcoin anchor; this is not full-blockchain validation.</p></article>
+      </div>
+      <p class="trust-boundary"><i data-lucide="shield-alert" aria-hidden="true"></i><span><strong>Choose trust independently.</strong> A matching manifest is not proof of authorship. Obtain this HTML and TSA roots from sources you trust; embedded roots reflect the builder's choice, not an independent endorsement.</span></p>
+      <details class="reference">
+        <summary>Archive structure and the exact record binding</summary>
+        <div class="reference-body">
+          <p>The expected input is the mytracker location-proof export format, not a generic ZIP or a server backup. Records and timestamp files travel together so their digest binding can be checked.</p>
+          <table class="reference-table">
+            <thead><tr><th scope="col">Entry</th><th scope="col">Role</th></tr></thead>
+            <tbody>
+              <tr><td><code>manifest.json</code></td><td>SHA-256 digests and counts for the other archive entries. This manifest is not externally signed.</td></tr>
+              <tr><td><code>locations.jsonl</code></td><td>Location records, payloads, expected digests, nonce metadata, and proof references.</td></tr>
+              <tr><td><code>proofs/{id}.tsr</code><br><code>proofs/{id}.ots</code></td><td>The TSA response and OTS proof tied to each record's canonical digest.</td></tr>
+              <tr><td><code>locations.csv</code></td><td>A display-oriented copy, not the canonical hashing input.</td></tr>
+              <tr><td><code>verification_runs.jsonl</code><br><code>verification_attempts.jsonl</code></td><td>Historical claims. Stored success labels are never substituted for a fresh proof check.</td></tr>
+            </tbody>
+          </table>
+          <p>The canonical digest includes <code>user</code>, <code>device</code>, <code>tst</code>, <code>lat</code>, <code>lon</code>, and optional <code>acc</code>, <code>alt</code>, <code>vel</code>, <code>cog</code>, <code>batt</code>. Coordinates are rounded to six decimal places; other floating-point measurements to one. Zero-valued optional fields are omitted. Other payload fields are not covered by this canonical digest.</p>
+          <p>The identity strings and location timestamp are reported data, not authenticated people, devices, or event times. A nonce comparison links the token to nonce metadata in this archive; it does not authenticate the archive's author.</p>
+        </div>
+      </details>
+      <details class="reference">
+        <summary>Verification scope, trust policy, and result meanings</summary>
+        <div class="reference-body">
+          <h3>Integrity is not authenticity</h3>
+          <p>Entry hashes, canonical digests, counts, and proof references must agree. Someone can change a manifest and its contents together; an integrity pass alone does not authenticate the archive or its sender.</p>
+          <h3>TSA trust</h3>
+          <p>A Time-Stamping Authority (TSA) signs a digest and its reported time. A trust root is a public CA certificate you accept to establish the signer's identity. A policy OID identifies the authority's declared timestamp policy; matching the identifier does not independently audit the authority's conduct.</p>
+          <p>A strict TSA result requires a valid SHA-256 imprint, signature, critical timestamping-only certificate usage, chain to accepted roots, matching nonce, and an allowed policy OID. Empty policy lists do not mean every policy is trusted. Legacy proofs without nonce metadata may be degraded. No OCSP/CRL revocation check is made, and this browser verifier does not use the browser or OS certificate store.</p>
+          <h3>Bitcoin corroboration</h3>
+          <p>Offline mode checks OTS structure and its digest binding. An unanchored proof can be pending; a Bitcoin attestation remains inconclusive without provider checks. Online mode checks returned header hashes, mainnet proof of work, Merkle commitments, and provider-reported confirmation depth. At least two sources must agree on a mature anchor; six confirmations is the default, not a guarantee of finality.</p>
+          <p>The selected providers supply chain and tip information. This verifier does not validate parent links, cumulative chainwork, all transactions, or the full Bitcoin chain. Network and CORS failures are errors, not successful checks. Online providers see the browser IP and block queries; the archive is not uploaded.</p>
+          <table class="reference-table">
+            <thead><tr><th scope="col">Result</th><th scope="col">Interpretation</th></tr></thead>
+            <tbody>
+              <tr><td>Verified</td><td>The proof passed this verifier's checks under the selected trust policy, within the limits above.</td></tr>
+              <tr><td>Degraded</td><td>Valid evidence with weaker assurance, such as missing nonce/policy linkage or only one mature Bitcoin source.</td></tr>
+              <tr><td>Pending / inconclusive</td><td>An anchor or enough confirmations are outstanding, or evidence cannot be corroborated.</td></tr>
+              <tr><td>Invalid</td><td>A required digest, signature, or other proof check failed.</td></tr>
+              <tr><td>Error / missing</td><td>A check could not complete, or a proof file is absent. Neither is a success.</td></tr>
+            </tbody>
+          </table>
+          <p>TSA and OTS have separate results. A valid archive checksum does not imply either proof is verified.</p>
+        </div>
+      </details>
+      <ul class="method-sources" aria-label="Source and method references">
+        <li><a href="https://www.rfc-editor.org/rfc/rfc3161" target="_blank" rel="noopener noreferrer">RFC 3161: timestamp protocol</a></li>
+        <li><a href="https://opentimestamps.org/" target="_blank" rel="noopener noreferrer">OpenTimestamps</a></li>
+        <li><a href="https://github.com/prepaser/mytracker" target="_blank" rel="noopener noreferrer">Verifier source (AGPL-3.0-only)</a></li>
+      </ul>
+    </section>
+
+    <section id="verification" class="workspace" aria-label="Verification inputs and policy">
+      <div class="archive-pane">
+        <div class="section-heading">
+          <div><p class="eyebrow">Input</p><h2>Verification archive</h2><p class="field-help">mytracker location-proof export format, not a backup.</p></div>
+          <span class="limit-label">ZIP | max 64 MiB</span>
+        </div>
+        <div id="drop-area" class="drop-area">
+          <label class="drop-target" for="archive-file">
+            <input class="sr-only" type="file" id="archive-file" accept=".zip,application/zip" aria-describedby="archive-help">
+            <span class="drop-icon" aria-hidden="true"><i data-lucide="archive"></i></span>
+            <span id="archive-title" class="drop-title">Drop a ZIP archive here</span>
+            <span id="archive-help" class="drop-copy">or choose a file from this device</span>
+            <span class="select-chip">Select ZIP</span>
+          </label>
+        </div>
+        <div id="archive-meta" class="selected-file" hidden>
+          <i data-lucide="file-check-2" aria-hidden="true"></i>
+          <span class="file-copy"><span id="archive-name" class="file-name"></span><span id="archive-size" class="file-size"></span></span>
+          <button type="button" id="clear-archive" class="icon-button" aria-label="Remove selected archive" title="Remove selected archive"><i data-lucide="x"></i></button>
+        </div>
+        <p class="privacy-note"><i data-lucide="lock-keyhole" aria-hidden="true"></i><span><strong>Archive stays on this device.</strong> It is processed in your browser and is never uploaded. Online mode contacts the selected Bitcoin providers directly; they can see your IP address and block queries.</span></p>
+      </div>
+
+      <form id="verify-form" class="policy-pane" novalidate>
+        <div class="section-heading">
+          <div><p class="eyebrow">Policy</p><h2>Verification options</h2></div>
+        </div>
+        <div class="policy-fields">
+          <div class="field">
+            <label class="field-label" for="roots-file">TSA trust roots</label>
+            <input type="file" id="roots-file" accept=".pem,.crt,.cer,.txt,application/x-pem-file" aria-describedby="roots-help">
+            <p id="roots-help" class="field-help">PEM bundle, max 1 MiB. A selected bundle replaces embedded trust roots.</p>
+            <p id="roots-state" class="field-help" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="policy-oids">Allowed TSA policy OIDs</label>
+            <textarea id="policy-oids" rows="2" spellcheck="false" aria-describedby="oids-help"></textarea>
+            <p id="oids-help" class="field-help">One OID per line. Empty leaves TSA policy unconfigured; otherwise valid TSA proofs may be degraded.</p>
+          </div>
+          <div class="two-fields">
+            <div class="field">
+              <label class="field-label" for="providers">Bitcoin providers</label>
+              <textarea id="providers" rows="2" spellcheck="false" aria-describedby="providers-help"></textarea>
+              <p id="providers-help" class="field-help">One Esplora API base URL per line.</p>
+            </div>
+            <div class="field">
+              <label class="field-label" for="min-confirmations">Min. confirmations</label>
+              <input type="number" id="min-confirmations" min="1" max="144" step="1" inputmode="numeric" required>
+            </div>
+          </div>
+          <label class="online-option" for="online-check">
+            <input type="checkbox" id="online-check">
+            <span><span class="online-title">Enable online OTS checks</span><span class="online-copy">Off by default. Requests go directly to the providers above.</span></span>
+          </label>
+        </div>
+        <div class="actions">
+          <button type="submit" id="verify-button" class="primary-button" disabled><i data-lucide="shield-check" aria-hidden="true"></i><span>Verify archive</span></button>
+          <button type="button" id="cancel-button" class="secondary-button" hidden><i data-lucide="x" aria-hidden="true"></i><span>Cancel</span></button>
+        </div>
+        <div id="run-state" class="run-state" role="status" aria-live="polite" aria-atomic="true"><i data-lucide="circle-help" aria-hidden="true"></i><span id="run-message">Select an archive to begin.</span></div>
+        <div id="progress-line" class="progress-line" hidden><progress id="run-progress" max="1" value="0" aria-label="Verification progress"></progress><span id="progress-count" class="progress-count"></span></div>
+      </form>
+    </section>
+
+    <p class="scope-note"><i data-lucide="info" aria-hidden="true"></i><span>TSA certificate revocation is not checked (no OCSP or CRL). Browser CORS restrictions may prevent online provider checks.</span></p>
+
+    <section id="results" class="results" aria-labelledby="results-title" hidden>
+      <div class="results-head">
+        <div><p class="eyebrow">Verification report</p><h2 id="results-title">Archive results</h2></div>
+        <div class="results-actions">
+          <button type="button" id="download-report" class="secondary-button" disabled><i data-lucide="download" aria-hidden="true"></i><span>JSON report</span></button>
+          <button type="button" id="clear-report" class="icon-button" aria-label="Clear report" title="Clear report"><i data-lucide="x"></i></button>
+        </div>
+      </div>
+      <div class="summary-grid" aria-label="Report summary">
+        <div class="summary-item"><span class="summary-label">Archive integrity</span><div id="summary-integrity" class="summary-value"></div></div>
+        <div class="summary-item"><span class="summary-label">Proof overall</span><div id="summary-overall" class="summary-value"></div></div>
+        <div class="summary-item"><span class="summary-label">Location records</span><div id="summary-locations" class="summary-value"></div></div>
+        <div class="summary-item"><span class="summary-label">Archive entries</span><div id="summary-entries" class="summary-value"></div></div>
+      </div>
+      <p class="integrity-note">A matching checksum confirms archive contents against its manifest; it does not establish who created the archive.</p>
+      <div class="table-toolbar">
+        <h3>Locations</h3>
+        <label class="filter-control" for="status-filter"><span>Overall</span><select id="status-filter">
+          <option value="all">All statuses</option>
+          <option value="verified">Verified</option>
+          <option value="degraded">Degraded</option>
+          <option value="pending">Pending</option>
+          <option value="inconclusive">Inconclusive</option>
+          <option value="invalid">Invalid</option>
+          <option value="error">Error</option>
+          <option value="missing">Missing</option>
+          <option value="unknown">Unknown</option>
+        </select></label>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Location</th><th scope="col">SHA-256</th><th scope="col">Overall</th><th scope="col">TSA</th><th scope="col">OTS</th><th scope="col"><span class="sr-only">Details</span></th></tr></thead>
+          <tbody id="locations-body"></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <span id="page-summary" aria-live="polite"></span>
+        <div class="page-controls"><button type="button" id="previous-page" class="icon-button" aria-label="Previous page" title="Previous page"><i data-lucide="chevron-left"></i></button><span id="page-number"></span><button type="button" id="next-page" class="icon-button" aria-label="Next page" title="Next page"><i data-lucide="chevron-right"></i></button></div>
+      </div>
+    </section>
+
+    <section id="empty-report" class="empty-state results" aria-label="No verification report">
+      <i data-lucide="clipboard-check" aria-hidden="true"></i>
+      <strong>No report yet</strong>
+      <span>Choose an archive and run verification to inspect its results.</span>
+    </section>
+  </main>
+
+  <dialog id="detail-dialog" aria-labelledby="detail-title">
+    <div class="dialog-head"><h2 id="detail-title">Location details</h2><button type="button" id="close-detail" class="icon-button" aria-label="Close details" title="Close details"><i data-lucide="x"></i></button></div>
+    <div id="detail-body" class="dialog-body"></div>
+  </dialog>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const DEFAULT_OPTIONS = {{DEFAULT_OPTIONS_JSON}};
+      const WORKER_SOURCE = {{WORKER_JS_JSON}};
+      const MAX_ARCHIVE = 64 * 1024 * 1024;
+      const MAX_ROOTS = 1024 * 1024;
+      const PAGE_SIZE = 50;
+      const STATUSES = new Set(['valid', 'verified', 'degraded', 'pending', 'inconclusive', 'invalid', 'error', 'missing']);
+      const defaults = DEFAULT_OPTIONS && typeof DEFAULT_OPTIONS === 'object' ? DEFAULT_OPTIONS : {};
+      const archiveInput = document.getElementById('archive-file');
+      const rootsInput = document.getElementById('roots-file');
+      const dropArea = document.getElementById('drop-area');
+      const verifyForm = document.getElementById('verify-form');
+      const verifyButton = document.getElementById('verify-button');
+      const cancelButton = document.getElementById('cancel-button');
+      const runState = document.getElementById('run-state');
+      const runMessage = document.getElementById('run-message');
+      const progressLine = document.getElementById('progress-line');
+      const progress = document.getElementById('run-progress');
+      const progressCount = document.getElementById('progress-count');
+      const results = document.getElementById('results');
+      const emptyReport = document.getElementById('empty-report');
+      const locationsBody = document.getElementById('locations-body');
+      const detailDialog = document.getElementById('detail-dialog');
+      const detailBody = document.getElementById('detail-body');
+      let selectedArchive = null;
+      let selectedRoots = null;
+      let report = null;
+      let currentPage = 0;
+      let activeRun = null;
+      let selectionRevision = 0;
+
+      function icons(root) {
+        if (window.lucide) window.lucide.createIcons({ root: root || document, attrs: { 'aria-hidden': 'true' } });
+      }
+
+      function splitLines(value) {
+        const lines = Array.isArray(value) ? value : typeof value === 'string' ? value.split(/\r?\n/) : [];
+        return lines.map(item => String(item).trim()).filter(Boolean);
+      }
+
+      document.getElementById('policy-oids').value = splitLines(defaults.policy_oids).join('\n');
+      document.getElementById('providers').value = splitLines(defaults.providers || ['https://blockstream.info/api', 'https://mempool.space/api']).join('\n');
+      document.getElementById('min-confirmations').value = Number.isInteger(defaults.min_confirmations) ? defaults.min_confirmations : 6;
+      const embeddedRoots = typeof defaults.roots_pem === 'string' && defaults.roots_pem.length > 0;
+      document.getElementById('roots-help').textContent = embeddedRoots
+        ? 'PEM bundle, max 1 MiB. A selected bundle replaces embedded trust roots.'
+        : 'PEM bundle, max 1 MiB. Required for TSA chain verification; no trust roots are embedded.';
+      document.getElementById('roots-state').textContent = embeddedRoots
+        ? 'Embedded TSA trust roots are configured.'
+        : 'No trust roots configured; TSA chain verification cannot be trusted.';
+
+      function setRunMessage(message, kind) {
+        runMessage.textContent = message;
+        runState.dataset.kind = kind || 'info';
+        const iconName = kind === 'error' ? 'circle-alert' : kind === 'success' ? 'circle-check' : 'circle-help';
+        const icon = document.createElement('i');
+        icon.setAttribute('data-lucide', iconName);
+        if (runState.firstElementChild) runState.firstElementChild.replaceWith(icon);
+        else runState.prepend(icon);
+        icons(runState);
+      }
+
+      function setBusy(busy) {
+        verifyButton.disabled = busy || !selectedArchive;
+        cancelButton.hidden = !busy;
+        for (const control of verifyForm.querySelectorAll('input, textarea')) control.disabled = busy;
+        archiveInput.disabled = busy;
+        document.getElementById('clear-archive').disabled = busy;
+      }
+
+      function sizeText(bytes) {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KiB`;
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MiB`;
+      }
+
+      function showNotice(message) {
+        setRunMessage(message, 'error');
+      }
+
+      function clearReport() {
+        report = null;
+        currentPage = 0;
+        results.hidden = true;
+        emptyReport.hidden = false;
+        document.getElementById('download-report').disabled = true;
+        locationsBody.replaceChildren();
+      }
+
+      function resetForInputChange() {
+        clearReport();
+        if (!activeRun) setRunMessage(selectedArchive ? 'Ready to verify.' : 'Select an archive to begin.', 'info');
+      }
+
+      function selectArchive(file) {
+        if (activeRun) cancelRun();
+        selectionRevision += 1;
+        selectedArchive = null;
+        archiveInput.value = '';
+        resetForInputChange();
+        document.getElementById('archive-meta').hidden = true;
+        document.getElementById('archive-title').textContent = 'Drop a ZIP archive here';
+        if (!file) {
+          verifyButton.disabled = true;
+          return;
+        }
+        if (!file.name.toLowerCase().endsWith('.zip')) {
+          showNotice('Choose a .zip archive.');
+          verifyButton.disabled = true;
+          return;
+        }
+        if (file.size > MAX_ARCHIVE) {
+          showNotice('The ZIP archive exceeds the 64 MiB limit.');
+          verifyButton.disabled = true;
+          return;
+        }
+        selectedArchive = file;
+        document.getElementById('archive-name').textContent = file.name;
+        document.getElementById('archive-size').textContent = sizeText(file.size);
+        document.getElementById('archive-meta').hidden = false;
+        document.getElementById('archive-title').textContent = 'Archive selected';
+        verifyButton.disabled = Boolean(activeRun);
+        if (!activeRun) setRunMessage('Ready to verify.', 'info');
+      }
+
+      archiveInput.addEventListener('change', () => selectArchive(archiveInput.files && archiveInput.files[0]));
+      document.getElementById('clear-archive').addEventListener('click', () => selectArchive(null));
+      rootsInput.addEventListener('change', () => {
+        if (activeRun) cancelRun();
+        selectionRevision += 1;
+        selectedRoots = rootsInput.files && rootsInput.files[0] || null;
+        resetForInputChange();
+        if (selectedRoots && selectedRoots.size > MAX_ROOTS) {
+          selectedRoots = null;
+          rootsInput.value = '';
+          showNotice('The TSA PEM bundle exceeds the 1 MiB limit.');
+        }
+        document.getElementById('roots-state').textContent = selectedRoots
+          ? `Selected PEM replaces embedded trust roots: ${selectedRoots.name} (${sizeText(selectedRoots.size)}).`
+          : embeddedRoots
+            ? 'Embedded TSA trust roots are configured.'
+            : 'No trust roots configured; TSA chain verification cannot be trusted.';
+      });
+
+      for (const control of verifyForm.querySelectorAll('textarea, input')) {
+        control.addEventListener('input', resetForInputChange);
+        control.addEventListener('change', resetForInputChange);
+      }
+
+      dropArea.addEventListener('dragover', event => {
+        event.preventDefault();
+        dropArea.classList.add('dragging');
+      });
+      dropArea.addEventListener('dragleave', event => {
+        if (!dropArea.contains(event.relatedTarget)) dropArea.classList.remove('dragging');
+      });
+      dropArea.addEventListener('drop', event => {
+        event.preventDefault();
+        dropArea.classList.remove('dragging');
+        selectArchive(event.dataTransfer && event.dataTransfer.files[0]);
+      });
+
+      function terminateRun(run) {
+        if (run.worker) run.worker.terminate();
+        if (run.url) URL.revokeObjectURL(run.url);
+        run.worker = null;
+        run.url = null;
+      }
+
+      function finishRun(run) {
+        terminateRun(run);
+        if (activeRun !== run) return;
+        activeRun = null;
+        setBusy(false);
+      }
+
+      function cancelRun() {
+        const run = activeRun;
+        if (!run) return;
+        run.cancelled = true;
+        finishRun(run);
+        progressLine.hidden = true;
+        setRunMessage('Verification cancelled. The worker was terminated.', 'info');
+      }
+
+      cancelButton.addEventListener('click', cancelRun);
+
+      function optionsFromForm(rootsPem) {
+        const minConfirmations = Number(document.getElementById('min-confirmations').value);
+        return {
+          roots_pem: rootsPem,
+          policy_oids: splitLines(document.getElementById('policy-oids').value),
+          providers: splitLines(document.getElementById('providers').value),
+          min_confirmations: minConfirmations,
+          online: document.getElementById('online-check').checked
+        };
+      }
+
+      function phaseText(phase) {
+        return String(phase || 'Verifying').replace(/[_-]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      }
+
+      function onProgress(data) {
+        const completed = Number(data.completed);
+        const total = Number(data.total);
+        setRunMessage(phaseText(data.phase), 'info');
+        if (Number.isFinite(total) && total > 0 && Number.isFinite(completed)) {
+          progress.max = total;
+          progress.value = Math.max(0, Math.min(total, completed));
+          progress.removeAttribute('aria-valuetext');
+          progressCount.textContent = `${Math.max(0, Math.min(total, completed))} / ${total}`;
+        } else {
+          progress.removeAttribute('value');
+          progressCount.textContent = '';
+        }
+        progressLine.hidden = false;
+      }
+
+      async function startVerification() {
+        if (activeRun || !selectedArchive) return;
+        const confirmationInput = document.getElementById('min-confirmations');
+        if (!confirmationInput.checkValidity()) {
+          confirmationInput.reportValidity();
+          return;
+        }
+        const file = selectedArchive;
+        const rootsFile = selectedRoots;
+        const revision = selectionRevision;
+        const run = { worker: null, url: null, cancelled: false, archive: null, roots: null, sent: false };
+        activeRun = run;
+        setBusy(true);
+        clearReport();
+        progressLine.hidden = true;
+        setRunMessage('Reading selected files in this browser...', 'info');
+        try {
+          run.archive = await file.arrayBuffer();
+          if (run.cancelled || activeRun !== run || revision !== selectionRevision || selectedArchive !== file || selectedRoots !== rootsFile) return;
+          run.roots = rootsFile ? await rootsFile.text() : (typeof defaults.roots_pem === 'string' ? defaults.roots_pem : '');
+          if (run.cancelled || activeRun !== run || revision !== selectionRevision || selectedArchive !== file || selectedRoots !== rootsFile) return;
+          if (typeof WORKER_SOURCE !== 'string' || !WORKER_SOURCE.trim()) throw new Error('Verifier worker is unavailable.');
+          const blob = new Blob([WORKER_SOURCE], { type: 'text/javascript' });
+          run.url = URL.createObjectURL(blob);
+          run.worker = new Worker(run.url, { name: 'proof-verifier' });
+          setRunMessage('Starting verifier...', 'info');
+          run.worker.onmessage = event => {
+            if (activeRun !== run || run.cancelled) return;
+            const data = event.data || {};
+            if (data.type === 'ready') {
+              if (run.sent) return;
+              run.sent = true;
+              setRunMessage('Verifying archive...', 'info');
+              run.worker.postMessage({ type: 'verify', archive: run.archive, options: optionsFromForm(run.roots) }, [run.archive]);
+              run.archive = null;
+            } else if (data.type === 'progress') {
+              onProgress(data);
+            } else if (data.type === 'result') {
+              if (!data.report || typeof data.report !== 'object') {
+                finishRun(run);
+                progressLine.hidden = true;
+                showNotice('The verifier returned an invalid report.');
+                return;
+              }
+              report = data.report;
+              finishRun(run);
+              progressLine.hidden = true;
+              renderReport();
+              setRunMessage('Verification complete.', 'success');
+            } else if (data.type === 'error') {
+              finishRun(run);
+              progressLine.hidden = true;
+              showNotice(String(data.message || 'Verification failed.'));
+            }
+          };
+          run.worker.onerror = event => {
+            event.preventDefault();
+            if (activeRun !== run) return;
+            finishRun(run);
+            progressLine.hidden = true;
+            showNotice(event.message || 'The verifier worker failed to start.');
+          };
+        } catch (error) {
+          if (activeRun !== run || run.cancelled) return;
+          finishRun(run);
+          progressLine.hidden = true;
+          showNotice(error && error.message ? error.message : 'Could not start verification.');
+        }
+      }
+
+      verifyForm.addEventListener('submit', event => {
+        event.preventDefault();
+        startVerification();
+      });
+
+      function rawStatus(value) {
+        if (value && typeof value === 'object') return rawStatus(value.result ?? value.status ?? value.overall);
+        if (value === true) return 'verified';
+        if (value === false) return 'invalid';
+        if (value === null || value === undefined || value === '') return 'missing';
+        const status = String(value).toLowerCase();
+        return STATUSES.has(status) ? status : 'unknown';
+      }
+
+      function statusBadge(value) {
+        const status = rawStatus(value);
+        const badge = document.createElement('span');
+        badge.className = `status status--${status}`;
+        badge.textContent = status;
+        return badge;
+      }
+
+      function entryCount(value) {
+        if (Number.isFinite(value)) return Math.max(0, value);
+        if (Array.isArray(value)) return value.length;
+        if (value && typeof value === 'object') {
+          for (const key of ['count', 'total', 'length']) if (Number.isFinite(value[key])) return Math.max(0, value[key]);
+        }
+        return 0;
+      }
+
+      function summaryValue(element, value) {
+        element.replaceChildren();
+        element.append(statusBadge(value));
+      }
+
+      function makeCell(text, className) {
+        const cell = document.createElement('td');
+        cell.textContent = text;
+        if (className) cell.className = className;
+        return cell;
+      }
+
+      function filteredLocations() {
+        const locations = Array.isArray(report && report.locations) ? report.locations : [];
+        const filter = document.getElementById('status-filter').value;
+        return locations.map((item, index) => ({ item, index })).filter(({ item }) => filter === 'all' || rawStatus(item && item.overall) === filter);
+      }
+
+      function renderLocations() {
+        const filtered = filteredLocations();
+        const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+        currentPage = Math.min(currentPage, pageCount - 1);
+        const start = currentPage * PAGE_SIZE;
+        const pageItems = filtered.slice(start, start + PAGE_SIZE);
+        const fragment = document.createDocumentFragment();
+        if (!pageItems.length) {
+          const row = document.createElement('tr');
+          const cell = document.createElement('td');
+          cell.className = 'empty-row';
+          cell.colSpan = 6;
+          cell.textContent = 'No locations match this status.';
+          row.append(cell);
+          fragment.append(row);
+        } else {
+          for (const { item, index } of pageItems) {
+            const row = document.createElement('tr');
+            const id = item && item.id !== undefined ? String(item.id) : '-';
+            const digest = item && item.digest_sha256 != null ? String(item.digest_sha256) : '';
+            row.append(makeCell(id, 'mono'));
+            const digestCell = makeCell(digest, 'mono digest-cell');
+            if (digest) digestCell.title = digest;
+            row.append(digestCell);
+            for (const key of ['overall', 'tsa', 'ots']) {
+              const cell = document.createElement('td');
+              cell.append(statusBadge(item && item[key]));
+              row.append(cell);
+            }
+            const actionCell = document.createElement('td');
+            const action = document.createElement('button');
+            action.type = 'button';
+            action.className = 'detail-button';
+            action.setAttribute('aria-label', `Details for location ${id}`);
+            action.title = 'View proof evidence';
+            action.dataset.index = String(index);
+            const icon = document.createElement('i');
+            icon.setAttribute('data-lucide', 'arrow-up-right');
+            action.append(icon);
+            action.addEventListener('click', () => openDetail(index));
+            actionCell.append(action);
+            row.append(actionCell);
+            fragment.append(row);
+          }
+        }
+        locationsBody.replaceChildren(fragment);
+        document.getElementById('page-summary').textContent = filtered.length ? `${start + 1}-${Math.min(start + PAGE_SIZE, filtered.length)} of ${filtered.length}` : '0 locations';
+        document.getElementById('page-number').textContent = `${currentPage + 1} / ${pageCount}`;
+        document.getElementById('previous-page').disabled = currentPage === 0;
+        document.getElementById('next-page').disabled = currentPage >= pageCount - 1;
+        icons(locationsBody);
+      }
+
+      function renderReport() {
+        results.hidden = false;
+        emptyReport.hidden = true;
+        summaryValue(document.getElementById('summary-integrity'), report.integrity);
+        const locations = Array.isArray(report.locations) ? report.locations.length : 0;
+        summaryValue(document.getElementById('summary-overall'), locations ? report.overall : 'inconclusive');
+        document.getElementById('summary-locations').textContent = String(locations);
+        document.getElementById('summary-entries').textContent = String(entryCount(report.entries));
+        document.querySelector('.integrity-note').textContent = locations
+          ? 'A matching checksum confirms archive contents against its manifest; it does not establish who created the archive.'
+          : 'No location records were present, so no proofs were evaluated. Archive integrity is reported separately.';
+        currentPage = 0;
+        document.getElementById('status-filter').value = 'all';
+        document.getElementById('download-report').disabled = false;
+        renderLocations();
+        icons(results);
+      }
+
+      function valueText(value) {
+        if (value === null) return 'null';
+        if (value === undefined) return 'Not available';
+        if (typeof value === 'string') return value;
+        if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+        return '';
+      }
+
+      function appendStructured(parent, value, depth) {
+        if (depth > 6) {
+          const clipped = document.createElement('span');
+          clipped.textContent = 'Nested evidence omitted';
+          parent.append(clipped);
+          return;
+        }
+        if (Array.isArray(value)) {
+          if (!value.length) {
+            const empty = document.createElement('span');
+            empty.textContent = 'Empty';
+            parent.append(empty);
+            return;
+          }
+          const list = document.createElement('ul');
+          list.className = 'evidence-list';
+          for (const item of value.slice(0, 100)) {
+            const li = document.createElement('li');
+            appendStructured(li, item, depth + 1);
+            list.append(li);
+          }
+          if (value.length > 100) {
+            const li = document.createElement('li');
+            li.textContent = `${value.length - 100} additional items omitted`;
+            list.append(li);
+          }
+          parent.append(list);
+          return;
+        }
+        if (value && typeof value === 'object') {
+          const dl = document.createElement('dl');
+          dl.className = 'evidence-dl';
+          const entries = Object.entries(value);
+          for (const [key, item] of entries.slice(0, 100)) {
+            const dt = document.createElement('dt');
+            const dd = document.createElement('dd');
+            dt.textContent = key;
+            appendStructured(dd, item, depth + 1);
+            dl.append(dt, dd);
+          }
+          if (entries.length > 100) {
+            const dt = document.createElement('dt');
+            const dd = document.createElement('dd');
+            dt.textContent = 'Additional fields';
+            dd.textContent = `${entries.length - 100} omitted`;
+            dl.append(dt, dd);
+          }
+          parent.append(dl);
+          return;
+        }
+        const output = document.createElement('span');
+        output.textContent = valueText(value);
+        parent.append(output);
+      }
+
+      function evidenceSection(title, proof) {
+        const section = document.createElement('section');
+        section.className = 'evidence-section';
+        const heading = document.createElement('div');
+        heading.className = 'evidence-title';
+        const h3 = document.createElement('h3');
+        h3.textContent = title;
+        heading.append(h3, statusBadge(proof && proof.result));
+        section.append(heading);
+        const fields = {};
+        if (proof && proof.error_code !== undefined) fields.error_code = proof.error_code;
+        if (proof && proof.evidence !== undefined) fields.evidence = proof.evidence;
+        if (proof && proof.history !== undefined) fields.history = proof.history;
+        if (Object.keys(fields).length) appendStructured(section, fields, 0);
+        else {
+          const empty = document.createElement('p');
+          empty.className = 'dialog-empty';
+          empty.textContent = 'No additional evidence was included.';
+          section.append(empty);
+        }
+        return section;
+      }
+
+      function openDetail(index) {
+        const locations = Array.isArray(report && report.locations) ? report.locations : [];
+        const item = locations[index];
+        if (!item) return;
+        detailBody.replaceChildren();
+        const summary = document.createElement('div');
+        summary.className = 'detail-summary';
+        const id = document.createElement('span');
+        id.className = 'detail-id';
+        id.textContent = `Location ${item.id === undefined ? '-' : item.id}`;
+        summary.append(id, statusBadge(item.overall));
+        if (item.digest_sha256 !== undefined) {
+          const digest = document.createElement('span');
+          digest.className = 'detail-digest mono';
+          digest.textContent = String(item.digest_sha256);
+          summary.append(digest);
+        }
+        detailBody.append(summary, evidenceSection('TSA evidence', item.tsa), evidenceSection('OTS evidence', item.ots));
+        if (item.history !== undefined) {
+          const history = document.createElement('section');
+          history.className = 'evidence-section';
+          const h3 = document.createElement('h3');
+          h3.className = 'evidence-title';
+          h3.textContent = 'Verification history';
+          history.append(h3);
+          appendStructured(history, item.history, 0);
+          detailBody.append(history);
+        }
+        icons(detailDialog);
+        detailDialog.showModal();
+      }
+
+      document.getElementById('status-filter').addEventListener('change', () => { currentPage = 0; renderLocations(); });
+      document.getElementById('previous-page').addEventListener('click', () => { currentPage = Math.max(0, currentPage - 1); renderLocations(); });
+      document.getElementById('next-page').addEventListener('click', () => { currentPage += 1; renderLocations(); });
+      document.getElementById('clear-report').addEventListener('click', () => {
+        clearReport();
+        setRunMessage(selectedArchive ? 'Ready to verify.' : 'Select an archive to begin.', 'info');
+      });
+      document.getElementById('download-report').addEventListener('click', () => {
+        if (!report) return;
+        const url = URL.createObjectURL(new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'proof-verification-report.json';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+      document.getElementById('close-detail').addEventListener('click', () => detailDialog.close());
+      detailDialog.addEventListener('click', event => { if (event.target === detailDialog) detailDialog.close(); });
+      document.getElementById('theme-toggle').addEventListener('click', event => {
+        const root = document.documentElement;
+        const theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        root.dataset.theme = theme;
+        try { localStorage.setItem('verifyui-theme', theme); } catch (_) {}
+        const button = event.currentTarget;
+        button.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`);
+        button.title = `Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`;
+        const icon = document.createElement('i');
+        icon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+        button.replaceChildren(icon);
+        icons(button);
+      });
+
+      const themeButton = document.getElementById('theme-toggle');
+      const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      themeButton.setAttribute('aria-label', `Switch to ${nextTheme} theme`);
+      themeButton.title = `Switch to ${nextTheme} theme`;
+      themeButton.querySelector('i').setAttribute('data-lucide', nextTheme === 'dark' ? 'moon' : 'sun');
+      icons();
+    })();
+  </script>
+</body>
+</html>

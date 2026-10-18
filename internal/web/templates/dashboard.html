@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mytracker</title>
+{{template "theme-head" .}}
+<link rel="stylesheet" href="/static/app/app.css">
+</head>
+<body class="app-shell dashboard">
+{{template "admin-nav" .}}
+<div class="app-main">
+<main class="page">
+  <header class="page-head">
+    <div><p class="eyebrow">Operations console</p><h1>Dashboard</h1></div>
+    <div class="page-meta"><span>Snapshot</span><time data-last-updated>Not loaded</time></div>
+  </header>
+
+  <section class="health-strip" id="health-summary" data-tone="neutral" aria-live="polite">
+    <i data-lucide="activity"></i><strong>Checking system health</strong><span>Waiting for the first snapshot.</span><div id="status-resource" class="resource-state" data-state="loading">Loading status</div><div id="health-actions" class="health-actions"></div>
+  </section>
+
+  <div class="dashboard-layout">
+    <section class="panel panel-wide" aria-labelledby="location-heading">
+      <div class="section-head"><div><p class="eyebrow">Location data</p><h2 id="location-heading">Tracking</h2></div><a href="/map" class="icon-text-button"><i data-lucide="map"></i><span>Open map</span></a></div>
+      <div class="metric-grid">
+        <div class="metric"><span>Total locations</span><strong id="stat-total">{{.Stats.Total}}</strong></div>
+        <div class="metric"><span>TSA stamped</span><strong id="stat-tsa-ok">{{.Stats.TsaOK}}</strong></div>
+        <div class="metric"><span>OTS confirmed</span><strong id="stat-ots-ok">{{.Stats.OtsOK}}</strong></div>
+        <div class="metric"><span>OTS pending</span><strong id="stat-ots-pending">{{.Stats.OtsPending}}</strong></div>
+        <div class="metric"><span>TSA failures</span><strong id="stat-tsa-fail">{{.Stats.TsaFail}}</strong></div>
+        <div class="metric"><span>OTS failures</span><strong id="stat-ots-fail">{{.Stats.OtsFail}}</strong></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="connection-heading">
+      <div class="section-head"><div><p class="eyebrow">Ingest</p><h2 id="connection-heading">Connections</h2></div></div>
+      <dl class="status-list">
+        <div><dt>Workers</dt><dd id="ops-workers">{{if .WorkersOK}}Healthy{{else}}Unhealthy{{end}}</dd></div>
+        <div><dt>MQTT</dt><dd id="ops-mqtt">Loading</dd></div>
+        <div><dt>Proof GC</dt><dd id="ops-gc">Loading</dd></div>
+        <div><dt>Timeline worker</dt><dd id="ops-timeline">Loading</dd></div>
+        <div><dt>Geofence worker</dt><dd id="ops-geofence">Loading</dd></div>
+        <div><dt>Delivery failures</dt><dd id="ops-delivery">Loading</dd></div>
+        <div><dt>Last backup</dt><dd id="ops-backup">{{.BackupAt}}</dd></div>
+      </dl>
+      <div class="secret-row"><code id="owntracks-url" aria-label="OwnTracks URL hidden">Hidden</code><button type="button" class="owntracks-reveal icon-text-button"><i data-lucide="eye"></i><span>Reveal and copy</span></button></div>
+    </section>
+
+    <section class="panel panel-wide" aria-labelledby="proof-heading">
+      <div class="section-head"><div><p class="eyebrow">Cryptographic evidence</p><h2 id="proof-heading">Proof quality</h2></div><button type="button" id="upgrade-ots" class="icon-text-button"><i data-lucide="refresh-cw"></i><span>Upgrade OTS</span></button></div>
+      <div class="metric-grid compact">
+        <div class="metric"><span>Strict verified</span><strong id="proof-verified">0</strong></div>
+        <div class="metric"><span>Degraded</span><strong id="proof-degraded">0</strong></div>
+        <div class="metric"><span>Inconclusive</span><strong id="proof-inconclusive">0</strong></div>
+        <div class="metric"><span>Invalid</span><strong id="proof-invalid">0</strong></div>
+        <div class="metric"><span>Stale</span><strong id="proof-stale">0</strong></div>
+        <div class="metric"><span>Policy stale</span><strong id="proof-policy-stale">0</strong></div>
+      </div>
+      <div class="subsection"><h3>Providers</h3><div class="table-wrap"><table><thead><tr><th>Provider</th><th>Result</th><th>PoW</th><th>Confirmations</th><th>Latency</th><th>Checked</th></tr></thead><tbody id="proof-providers"><tr><td colspan="6" class="empty">No provider checks yet</td></tr></tbody></table></div></div>
+    </section>
+
+    <section class="panel" aria-labelledby="verify-queue-heading">
+      <div class="section-head"><div><p class="eyebrow">Persistent queue</p><h2 id="verify-queue-heading">Verification</h2></div></div>
+      <div class="metric-grid compact two-col">
+        <div class="metric"><span>Queued</span><strong id="verify-queued">0</strong></div>
+        <div class="metric"><span>Running</span><strong id="verify-running">0</strong></div>
+        <div class="metric"><span>Retrying</span><strong id="verify-retry">0</strong></div>
+        <div class="metric"><span>Failed</span><strong id="verify-failed">0</strong></div>
+      </div>
+      <dl class="status-list"><div><dt>Workers</dt><dd id="verify-workers">Loading</dd></div><div><dt>Oldest queued</dt><dd id="verify-oldest">0s</dd></div></dl>
+    </section>
+
+    <section class="panel panel-full" aria-labelledby="maintenance-heading">
+      <div class="section-head"><div><p class="eyebrow">Scheduled work</p><h2 id="maintenance-heading">Maintenance</h2></div><button type="button" id="create-backup" class="btn-primary"><i data-lucide="database-backup"></i><span>Create backup</span></button></div>
+      <div class="table-wrap stack-mobile"><table><thead><tr><th>Task</th><th>State</th><th>Next run</th><th>Last success</th><th>Error</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody id="maintenance-jobs"><tr><td colspan="6" class="empty">Loading</td></tr></tbody></table></div>
+      <div class="subsection"><h3>Recent runs</h3><div class="table-wrap"><table><thead><tr><th>Task</th><th>Trigger</th><th>Result</th><th>Duration</th><th>Finished</th></tr></thead><tbody id="maintenance-runs"><tr><td colspan="5" class="empty">Loading</td></tr></tbody></table></div></div>
+    </section>
+
+    <section class="panel panel-full" aria-labelledby="failure-heading">
+      <div class="section-head"><div><p class="eyebrow">Needs attention</p><h2 id="failure-heading">Stamp failures</h2></div><button type="button" id="retry-all" class="icon-text-button"><i data-lucide="rotate-ccw"></i><span>Retry all</span></button></div>
+      <div class="table-wrap stack-mobile"><table><thead><tr><th>Job</th><th>Kind</th><th>Attempts</th><th>Error</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody id="failed-jobs"><tr><td colspan="5" class="empty">Loading</td></tr></tbody></table></div>
+    </section>
+
+    <section class="panel panel-full" aria-labelledby="recent-heading">
+      <div class="section-head"><div><p class="eyebrow">Location feed</p><h2 id="recent-heading">Recent locations</h2></div></div>
+      <div class="table-wrap stack-mobile"><table><thead><tr><th>Time</th><th>Identity</th><th>Coordinates</th><th>TSA</th><th>OTS</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody id="recent-locations"><tr><td colspan="6" class="empty">Loading</td></tr></tbody></table></div>
+    </section>
+	<section class="panel panel-full" aria-labelledby="geofence-heading"><div class="section-head"><div><p class="eyebrow">Boundary activity</p><h2 id="geofence-heading">Recent geofence events</h2></div><a href="/settings#tracking" class="icon-text-button"><i data-lucide="settings"></i><span>Manage</span></a></div><div class="table-wrap stack-mobile"><table><thead><tr><th>Time</th><th>Geofence</th><th>Event</th><th>Identity</th></tr></thead><tbody id="geofence-events"><tr><td colspan="4" class="empty">Loading</td></tr></tbody></table></div></section>
+  </div>
+</main>
+</div>
+
+{{template "proof-dialog" .}}
+{{template "ui-hosts" .}}
+<script type="application/json" id="cfg">{"csrf":{{json .CSRF}}}</script>
+{{template "common-scripts" .}}
+<script src="/static/app/verify.js"></script>
+<script src="/static/app/dashboard.js"></script>
+<script src="/static/app/credentials.js"></script>
+</body>
+</html>

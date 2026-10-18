@@ -1,0 +1,32 @@
+[Unit]
+Description=mytracker location tracker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mytracker
+Group=mytracker
+StateDirectory=mytracker mytracker-bootstrap
+StateDirectoryMode=0700
+WorkingDirectory=/var/lib/mytracker-bootstrap
+ExecStartPre=/usr/local/bin/mytracker doctor -config /etc/mytracker/config.toml
+ExecStart=/usr/local/bin/mytracker -config /etc/mytracker/config.toml
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=15min
+TimeoutStopSec=25
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+
+[Install]
+WantedBy=multi-user.target

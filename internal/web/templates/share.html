@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}}</title>
+{{template "theme-head" .}}
+<link rel="stylesheet" href="/static/leaflet/leaflet.css">
+<link rel="stylesheet" href="/static/app/app.css">
+</head>
+<body class="share-shell">
+<header class="share-header">
+  <div><h1>{{.Title}}</h1><div class="connection-line"><span class="connection-dot" aria-hidden="true"></span><span data-connection>Connecting</span><span aria-hidden="true">·</span><span>Last updated <time data-last-updated>Not yet</time></span></div></div>
+  <div class="share-actions"><button type="button" id="fit-track" class="icon-text-button" aria-label="Fit track"><i data-lucide="scan"></i><span>Fit track</span></button><button type="button" class="icon-button theme-toggle" data-theme-toggle aria-label="Change theme"><i data-lucide="sun"></i></button></div>
+</header>
+<main class="share-map"><div id="map" aria-label="Shared location map"></div><div class="map-overlay" id="map-state" role="status"><i data-lucide="loader-circle" class="spin"></i><span>Loading shared track</span></div></main>
+{{template "ui-hosts" .}}
+<script type="application/json" id="cfg">{"tileURL":{{json .TileURL}},"tileAttr":{{json .TileAttr}}{{if .LastLat}},"lat":{{.LastLat}},"lon":{{.LastLon}}{{end}}}</script>
+{{template "common-scripts" .}}
+<script src="/static/leaflet/leaflet.js"></script>
+<script src="/static/app/map-geometry.js"></script>
+<script src="/static/app/share.js"></script>
+</body>
+</html>

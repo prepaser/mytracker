@@ -1,0 +1,55 @@
+{{define "theme-head"}}<script src="/static/app/theme.js"></script>{{end}}
+
+{{define "admin-nav"}}
+<aside class="app-nav" aria-label="Primary navigation">
+  <a class="brand" href="/" aria-label="mytracker dashboard">
+    <span class="brand-mark">M</span><span>mytracker</span>
+  </a>
+  <nav class="nav-links">
+    <a href="/" aria-label="Dashboard" {{if eq .Page "dashboard"}}class="active" aria-current="page"{{end}}><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+    <a href="/map" aria-label="Map" {{if eq .Page "map"}}class="active" aria-current="page"{{end}}><i data-lucide="map"></i><span>Map</span></a>
+	<a href="/timeline" aria-label="Timeline" {{if eq .Page "timeline"}}class="active" aria-current="page"{{end}}><i data-lucide="route"></i><span>Timeline</span></a>
+    <a href="/settings" aria-label="Settings" {{if eq .Page "settings"}}class="active" aria-current="page"{{end}}><i data-lucide="settings"></i><span>Settings</span></a>
+  </nav>
+  <div class="nav-footer">
+    <div class="connection-line"><span class="connection-dot" aria-hidden="true"></span><span data-connection>Connecting</span></div>
+    <button type="button" class="icon-text-button theme-toggle" data-theme-toggle><i data-lucide="sun"></i><span>Light theme</span></button>
+    <form method="post" action="/logout"><input type="hidden" name="csrf" value="{{.CSRF}}"><button type="submit" class="icon-text-button" aria-label="Logout"><i data-lucide="log-out"></i><span>Logout</span></button></form>
+  </div>
+</aside>
+{{end}}
+
+{{define "ui-hosts"}}
+<div id="session-notice" class="session-notice notice" role="alert" hidden>
+  <span>Session expired. Your unsaved changes are still here.</span>
+  <a class="button" href="/login" target="_blank" rel="noopener">Sign in</a>
+  <button type="button" id="session-resume">Resume</button>
+</div>
+<div id="toast-region" class="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
+<dialog id="ui-confirm" class="ui-dialog" aria-labelledby="ui-confirm-title">
+  <form id="ui-confirm-form" method="dialog">
+    <div class="dialog-head"><h2 id="ui-confirm-title">Confirm action</h2><button type="button" data-confirm-cancel class="icon-button" aria-label="Close"><i data-lucide="x"></i></button></div>
+    <p id="ui-confirm-message" class="dialog-copy"></p>
+    <div id="ui-confirm-input-wrap" class="form-group" hidden><label for="ui-confirm-input">Confirmation</label><input id="ui-confirm-input" autocomplete="off"></div>
+    <div class="dialog-actions"><button type="button" data-confirm-cancel>Cancel</button><button type="submit" id="ui-confirm-action" class="btn-danger">Confirm</button></div>
+  </form>
+</dialog>
+<dialog id="ui-secret" class="ui-dialog" aria-labelledby="ui-secret-title">
+  <div class="dialog-head"><h2 id="ui-secret-title">One-time secret</h2><button type="button" class="icon-button" data-secret-close aria-label="Close"><i data-lucide="x"></i></button></div>
+  <p class="dialog-copy">This value will not be shown again.</p>
+  <div class="copy-field"><input id="ui-secret-value" readonly aria-label="One-time URL"><button type="button" id="ui-secret-copy"><i data-lucide="copy"></i><span>Copy</span></button></div>
+  <div class="dialog-actions"><button type="button" class="btn-primary" data-secret-close>Done</button></div>
+</dialog>
+{{end}}
+
+{{define "proof-dialog"}}
+<dialog id="verify-dialog" aria-labelledby="verify-title">
+  <div class="dialog-head"><h2 id="verify-title">Proof verification</h2><button type="button" id="verify-close" class="icon-button" aria-label="Close"><i data-lucide="x"></i></button></div>
+  <div id="verify-state" class="resource-state" role="status" hidden></div>
+  <div id="verify-out" class="proof-summary" aria-live="polite"></div>
+  <section class="subsection" aria-labelledby="verify-history-title"><h3 id="verify-history-title">Recent checks</h3><div id="verify-history-state" class="resource-state" role="status" hidden></div><div id="verify-history" class="history muted"></div></section>
+  <div class="dialog-actions"><button type="button" id="verify-now" class="btn-primary"><i data-lucide="refresh-cw"></i><span>Reverify</span></button></div>
+</dialog>
+{{end}}
+
+{{define "common-scripts"}}<script src="/static/vendor/lucide/lucide.min.js"></script><script src="/static/app/ui.js"></script>{{end}}

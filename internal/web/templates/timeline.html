@@ -1,0 +1,40 @@
+{{define "timeline.html"}}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Timeline - mytracker</title>
+  {{template "theme-head" .}}
+  <link rel="stylesheet" href="/static/app/app.css">
+</head>
+<body class="app-shell timeline">
+  {{template "admin-nav" .}}
+  <div class="app-main">
+    <main class="page">
+      <header class="page-head">
+        <div><p class="eyebrow">Movement</p><h1>Timeline</h1><p class="section-copy">Review derived trips and stays for a fixed time window.</p></div>
+        <button type="button" class="icon-button theme-toggle" data-theme-toggle aria-label="Toggle theme"><i data-lucide="sun"></i></button>
+      </header>
+      <form id="timeline-filters" class="toolbar timeline-filters">
+        <label for="timeline-user">User<select id="timeline-user"><option value="">All</option></select></label>
+        <label for="timeline-device">Device<select id="timeline-device"><option value="">All</option></select></label>
+        <label for="timeline-hours">Period<select id="timeline-hours"><option value="24">24 hours</option><option value="168">7 days</option><option value="720">30 days</option><option value="0">All</option></select></label>
+        <button id="timeline-refresh" type="button" class="icon-text-button"><i data-lucide="refresh-cw"></i><span>Refresh</span></button>
+      </form>
+      <section id="timeline-summary" class="metric-grid compact" aria-label="Timeline summary" aria-live="polite"></section>
+      <div id="timeline-changed" class="notice" role="status" hidden><i data-lucide="circle-alert"></i><span>New timeline data is available.</span><button id="timeline-changed-refresh" type="button" class="icon-text-button small"><i data-lucide="refresh-cw"></i><span>Refresh</span></button></div>
+      <section class="panel">
+        <div class="section-head"><h2>Trips and stays</h2><span id="timeline-updated" class="muted">Not loaded</span></div>
+        <div id="timeline-list" class="data-list" aria-live="polite"><p class="empty-state">Loading timeline...</p></div>
+        <nav class="timeline-pagination" aria-label="Timeline pages"><button id="timeline-previous" type="button" class="icon-text-button" disabled><i data-lucide="chevron-left"></i><span>Previous</span></button><span id="timeline-page" class="muted">Page 1</span><button id="timeline-next" type="button" class="icon-text-button" disabled><span>Next</span><i data-lucide="chevron-right"></i></button></nav>
+      </section>
+    </main>
+  </div>
+  {{template "ui-hosts" .}}
+  <script type="application/json" id="cfg">{"identities":{{json .Identities}}}</script>
+  {{template "common-scripts" .}}
+  <script src="/static/app/timeline.js"></script>
+</body>
+</html>
+{{end}}

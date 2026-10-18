@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mytracker · Login</title>
+{{template "theme-head" .}}
+<link rel="stylesheet" href="/static/app/app.css">
+</head>
+<body class="login">
+<button type="button" class="icon-button login-theme" data-theme-toggle aria-label="Change theme"><i data-lucide="sun"></i></button>
+<main class="login-panel">
+  <div class="brand login-brand"><span class="brand-mark">M</span><span>mytracker</span></div>
+  <p class="eyebrow">Private location archive</p><h1>Sign in</h1>
+  {{if .Error}}<div class="notice error" role="alert"><i data-lucide="circle-alert"></i><span>{{.Error}}</span></div>{{end}}
+  <form method="post" action="/login">
+    <div class="form-group"><label for="password">Password</label><input id="password" type="password" name="password" autocomplete="current-password" autofocus required></div>
+    <button type="submit" class="btn-primary login-submit"><i data-lucide="log-in"></i><span>Sign in</span></button>
+  </form>
+</main>
+{{template "ui-hosts" .}}
+{{template "common-scripts" .}}
+</body>
+</html>

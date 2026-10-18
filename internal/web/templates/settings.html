@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mytracker · Settings</title>
+{{template "theme-head" .}}
+<link rel="stylesheet" href="/static/app/app.css">
+</head>
+<body class="app-shell settings">
+{{template "admin-nav" .}}
+<div class="app-main"><main class="page">
+  <header class="page-head"><div><p class="eyebrow">Configuration</p><h1>Settings</h1></div></header>
+  {{if .Saved}}<div class="notice success"><i data-lucide="circle-check"></i><span>Settings saved.</span></div>{{end}}
+  {{if .Error}}<div class="notice error" role="alert"><i data-lucide="circle-alert"></i><span>{{.Error}} {{if .SaveError}}Secret fields were cleared; re-enter them if needed.{{end}}</span></div>{{end}}
+
+  <div class="settings-layout">
+    <div class="tabs" role="tablist" aria-label="Settings sections">
+      <button type="button" class="tab" id="tab-tracking" role="tab" aria-controls="panel-tracking" data-tab="tracking"><i data-lucide="radio"></i><span>Tracking</span></button>
+      <button type="button" class="tab" id="tab-proofs" role="tab" aria-controls="panel-proofs" data-tab="proofs"><i data-lucide="shield-check"></i><span>Proofs</span></button>
+      <button type="button" class="tab" id="tab-privacy" role="tab" aria-controls="panel-privacy" data-tab="privacy"><i data-lucide="lock-keyhole"></i><span>Privacy</span></button>
+      <button type="button" class="tab" id="tab-operations" role="tab" aria-controls="panel-operations" data-tab="operations"><i data-lucide="wrench"></i><span>Operations</span></button>
+    </div>
+
+    <div class="settings-content">
+    <form method="post" action="/settings" id="settings-form">
+      <input type="hidden" name="csrf" value="{{.CSRF}}">
+      <input type="hidden" name="active_tab" id="active-tab" value="{{.ActiveTab}}">
+      <input type="hidden" name="settings_revision" value="{{.SettingsRevision}}">
+    </form>
+
+      <div class="settings-section" id="panel-tracking" role="tabpanel" aria-labelledby="tab-tracking" data-panel="tracking">
+        <section class="settings-group"><h2>OwnTracks HTTP</h2><p class="section-copy">Use this endpoint in OwnTracks connection settings.</p>
+          <div class="secret-row"><code id="owntracks-url" aria-label="OwnTracks URL hidden">Hidden</code><button type="button" class="owntracks-reveal icon-text-button"><i data-lucide="eye"></i><span>Reveal and copy</span></button></div>
+          <div class="field-grid">
+            <div class="form-group"><label for="pub-user">Username</label><input id="pub-user" name="pub_user" form="settings-form" value="{{.PubUser}}" required></div>
+            <div class="form-group"><label for="pub-pass">Password</label><input id="pub-pass" name="pub_pass" form="settings-form" type="password" placeholder="Leave blank to keep" autocomplete="new-password"></div>
+          </div>
+          <label class="checkbox"><input type="checkbox" name="regen_pub_pass" form="settings-form" value="1" {{if .RegenPubPass}}checked{{end}}> Generate a new password</label>
+        </section>
+
+        <section class="settings-group"><h2>OwnTracks MQTT</h2>
+          <label class="checkbox"><input type="checkbox" name="mqtt_enabled" form="settings-form" value="1" {{if .MQTTEnabled}}checked{{end}}> Enable MQTT subscriber</label>
+          <div class="field-grid">
+            <div class="form-group"><label for="mqtt-broker">Broker</label><input id="mqtt-broker" name="mqtt_broker" form="settings-form" value="{{.MQTTBroker}}" placeholder="tcp://localhost:1883"></div>
+            <div class="form-group"><label for="mqtt-topic">Topic</label><input id="mqtt-topic" name="mqtt_topic" form="settings-form" value="{{.MQTTTopic}}" placeholder="owntracks/#"></div>
+            <div class="form-group"><label for="mqtt-client">Client ID</label><input id="mqtt-client" name="mqtt_client_id" form="settings-form" value="{{.MQTTClientID}}" placeholder="Auto from hostname"></div>
+            <div class="form-group"><label for="mqtt-user">Username</label><input id="mqtt-user" name="mqtt_user" form="settings-form" value="{{.MQTTUser}}"></div>
+            <div class="form-group"><label for="mqtt-pass">Password</label><input id="mqtt-pass" name="mqtt_pass" form="settings-form" type="password" placeholder="Leave blank to keep" autocomplete="new-password"></div>
+            <div class="form-group"><label for="mqtt-ca">CA file</label><input id="mqtt-ca" name="mqtt_ca_file" form="settings-form" value="{{.MQTTCAFile}}" placeholder="/path/to/mqtt-ca.pem"><p class="field-help">Optional TLS trust root for mqtts://.</p></div>
+          </div>
+        </section>
+
+        <section class="settings-group"><h2>Map tiles</h2>
+          <div class="form-group"><label for="tile-url">Tile URL</label><input id="tile-url" name="tile_url" form="settings-form" value="{{.TileURL}}"></div>
+          <div class="form-group"><label for="tile-attr">Tile attribution</label><input id="tile-attr" name="tile_attribution" form="settings-form" value="{{.TileAttr}}"></div>
+          <p class="notice-inline"><i data-lucide="info"></i><span>Map viewing sends the viewport, browser IP, and site origin to the tile provider.</span></p>
+        </section>
+		<section class="settings-group"><h2>Trips and stays</h2><div class="field-grid"><div class="form-group"><label for="stay-radius">Stay radius, m</label><input id="stay-radius" name="stay_radius_m" form="settings-form" type="{{if .SaveError}}text{{else}}number{{end}}" inputmode="numeric" min="25" max="100000" value="{{.StayRadiusM}}" required></div><div class="form-group"><label for="stay-duration">Minimum stay duration</label><input id="stay-duration" name="stay_min_duration" form="settings-form" value="{{.StayMinDuration}}" required></div><div class="form-group"><label for="trip-gap">Trip gap</label><input id="trip-gap" name="trip_gap" form="settings-form" value="{{.TripGap}}" required></div></div></section>
+		<section class="settings-group"><form id="geofence-form"><div class="section-head"><h2>Geofences</h2><div><button type="button" id="geofence-cancel" class="icon-text-button" hidden><i data-lucide="x"></i><span>Cancel</span></button><button type="submit" id="geofence-create"><i data-lucide="plus"></i><span>Add geofence</span></button></div></div><div class="field-grid"><div class="form-group"><label for="geofence-name">Name</label><input id="geofence-name" maxlength="80" required></div><div class="form-group"><label for="geofence-lat">Latitude</label><input id="geofence-lat" type="number" min="-90" max="90" step="any" required></div><div class="form-group"><label for="geofence-lon">Longitude</label><input id="geofence-lon" type="number" min="-180" max="180" step="any" required></div><div class="form-group"><label for="geofence-radius">Radius, m</label><input id="geofence-radius" type="number" min="25" max="100000" value="200" required></div><div class="form-group"><label for="geofence-user">User filter</label><input id="geofence-user" maxlength="128" placeholder="All"></div><div class="form-group"><label for="geofence-device">Device filter</label><input id="geofence-device" maxlength="128" placeholder="All"></div><label class="checkbox"><input id="geofence-enabled" type="checkbox" checked> Enabled</label></div><div id="geofence-list" class="data-list"><p class="empty">Loading</p></div></form></section>
+      </div>
+
+      <div class="settings-section" id="panel-proofs" role="tabpanel" aria-labelledby="tab-proofs" data-panel="proofs" hidden>
+        <section class="settings-group"><h2>TSA (RFC 3161)</h2>
+          <div class="form-group"><label for="tsa-url">TSA URL</label><input id="tsa-url" name="tsa_url" form="settings-form" value="{{.TSAURL}}" required></div>
+          <div class="form-group"><label for="tsa-trust-roots">Trust roots</label><input id="tsa-trust-roots" name="tsa_trust_roots" form="settings-form" value="{{.TSATrustRoots}}" placeholder="/path/to/tsa-ca.pem"><p class="field-help">System CA validation is classified as degraded.</p></div>
+          <div class="form-group"><label for="tsa-policy-oids">Policy OIDs, one per line</label><textarea id="tsa-policy-oids" name="tsa_policy_oids" form="settings-form" rows="3" placeholder="1.2.3.4">{{.TSAPolicyOIDs}}</textarea><p class="field-help">Certificate revocation is not checked online.</p></div>
+        </section>
+        <section class="settings-group"><h2>OpenTimestamps</h2>
+          <div class="form-group"><label for="ots-calendars">Calendar URLs, one per line</label><textarea id="ots-calendars" name="ots_calendars" form="settings-form" rows="4">{{.OTSCalendars}}</textarea></div>
+          <div class="form-group"><label for="esplora-urls">Esplora API URLs, one per line</label><textarea id="esplora-urls" name="esplora_urls" form="settings-form" rows="3">{{.EsploraURLs}}</textarea><p class="field-help">Providers see this server's IP and queried Bitcoin block heights.</p></div>
+          <div class="form-group"><label for="ots-min-confirmations">Minimum Bitcoin confirmations</label><input id="ots-min-confirmations" name="ots_min_confirmations" form="settings-form" type="{{if .SaveError}}text{{else}}number{{end}}" inputmode="numeric" min="1" max="144" value="{{.OTSConfirmations}}" required></div>
+        </section>
+      </div>
+
+      <div class="settings-section" id="panel-privacy" role="tabpanel" aria-labelledby="tab-privacy" data-panel="privacy" hidden>
+        <section class="settings-group"><h2>Admin security</h2>
+          <div class="field-grid">
+            <div class="form-group"><label for="new-password">New password</label><input id="new-password" type="password" name="new_password" form="settings-form" placeholder="Leave blank to keep" autocomplete="new-password"></div>
+            <div class="form-group"><label for="session-days">Session lifetime, days</label><input id="session-days" name="session_days" form="settings-form" type="{{if .SaveError}}text{{else}}number{{end}}" inputmode="numeric" min="1" value="{{.SessionDays}}"></div>
+            <div class="form-group"><label for="session-idle">Idle timeout</label><input id="session-idle" name="session_idle" form="settings-form" value="{{.SessionIdle}}" placeholder="12h"></div>
+          </div>
+        </section>
+        <section class="settings-group" aria-labelledby="sessions-heading"><div class="section-head"><h2 id="sessions-heading">Active sessions</h2><button type="button" id="sessions-revoke-others" class="icon-text-button"><i data-lucide="log-out"></i><span>Revoke others</span></button></div>
+          <div class="table-wrap stack-mobile"><table><thead><tr><th>Created</th><th>Last used</th><th>Expires</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody id="sessions"><tr><td colspan="4" class="empty">Loading</td></tr></tbody></table></div>
+        </section>
+        <section class="settings-group" id="share"><form id="share-form"><h2>Location share links</h2><p class="section-copy">Tokens appear once. Existing links can only be rotated or revoked.</p>
+          <div class="field-grid">
+            <div class="form-group"><label for="share-label">Label</label><input id="share-label" placeholder="Family"></div>
+            <div class="form-group"><label for="share-user">User</label><select id="share-user"><option value="">All</option></select></div>
+            <div class="form-group"><label for="share-device">Device</label><select id="share-device"><option value="">All</option></select></div>
+            <div class="form-group"><label for="share-delay">Location delay</label><select id="share-delay"><option value="0">None</option><option value="15" selected>15 minutes</option><option value="60">1 hour</option><option value="1440">24 hours</option></select></div>
+            <div class="form-group"><label for="share-precision">Coordinate precision</label><select id="share-precision"><option value="0">Exact</option><option value="100" selected>100 m</option><option value="500">500 m</option><option value="1000">1 km</option></select></div>
+            <div class="form-group"><label for="share-hours">Track period, hours</label><input id="share-hours" type="number" min="1" value="24" required></div>
+            <div class="form-group"><label for="share-expires">Link expiry, days</label><input id="share-expires" type="number" min="0" value="7" required></div>
+          </div>
+          <button type="submit" class="btn-primary" id="share-create"><i data-lucide="link"></i><span>Create link</span></button>
+          <p class="field-help">Use 0 days for no expiry.</p></form>
+          <div class="subsection"><div class="table-wrap stack-mobile"><table><thead><tr><th>Label</th><th>Filter</th><th>Hours</th><th>Expires</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody id="share-list"><tr><td colspan="5" class="empty">Loading</td></tr></tbody></table></div></div>
+        </section>
+      </div>
+
+      <div class="settings-section" id="panel-operations" role="tabpanel" aria-labelledby="tab-operations" data-panel="operations" hidden>
+        <section class="settings-group"><h2>Retention and backup</h2><div class="field-grid">
+          <div class="form-group"><label for="retention-days">Retention days</label><input id="retention-days" name="retention_days" form="settings-form" type="{{if .SaveError}}text{{else}}number{{end}}" inputmode="numeric" min="0" max="106751" value="{{.RetentionDays}}"><p class="field-help">Use 0 to disable.</p></div>
+          <div class="form-group"><label for="retention-by">Retention by</label><select id="retention-by" name="retention_by" form="settings-form"><option value="tst" {{if eq .RetentionBy "tst"}}selected{{end}}>Event time</option><option value="received" {{if eq .RetentionBy "received"}}selected{{end}}>Server received</option></select></div>
+          <div class="form-group"><label for="backup-interval">Backup interval</label><input id="backup-interval" name="backup_interval" form="settings-form" value="{{.BackupInterval}}" required></div>
+          <div class="form-group"><label for="backup-keep">Backups to keep</label><input id="backup-keep" name="backup_keep" form="settings-form" type="{{if .SaveError}}text{{else}}number{{end}}" inputmode="numeric" min="1" max="365" value="{{.BackupKeep}}" required></div>
+        </div></section>
+        <section class="settings-group"><h2>Webhook</h2><div class="field-grid">
+          <div class="form-group"><label for="webhook-url">Webhook URL</label><input id="webhook-url" name="webhook_url" form="settings-form" value="{{.WebhookURL}}"></div>
+          <div class="form-group"><label for="webhook-secret">Webhook secret</label><input id="webhook-secret" name="webhook_secret" form="settings-form" type="password" placeholder="Leave blank to keep" autocomplete="new-password"></div>
+        </div></section>
+        <section class="settings-group"><h2>Data transfer</h2>
+          <div class="field-grid">
+            <div><div class="form-group"><label for="export-hours">Export period</label><select id="export-hours"><option value="0">All</option><option value="24" selected>24 hours</option><option value="168">7 days</option><option value="720">30 days</option></select></div><a href="/api/export?hours=24" id="export-link" class="button"><i data-lucide="download"></i><span>Download export</span></a></div>
+            <form id="import-form"><div class="form-group"><label for="import-file">Import export ZIP</label><input id="import-file" type="file" accept=".zip,application/zip" required></div><button type="submit" id="import-submit"><i data-lucide="upload"></i><span>Import</span></button></form>
+          </div>
+        </section>
+		<section class="settings-group"><h2>GPX transfer</h2><div class="field-grid"><div><div class="form-group"><label for="gpx-user">User</label><input id="gpx-user"></div><div class="form-group"><label for="gpx-device">Device</label><input id="gpx-device"></div><a id="gpx-export" class="button" href="/api/export/gpx"><i data-lucide="download"></i><span>Download GPX</span></a></div><form id="gpx-import-form"><div class="form-group"><label for="gpx-file">Import GPX</label><input id="gpx-file" type="file" accept=".gpx,application/gpx+xml" required></div><button type="submit" id="gpx-import"><i data-lucide="upload"></i><span>Import GPX</span></button></form></div></section>
+        <section class="settings-group"><form id="delete-form"><h2>Delete location range</h2><p class="section-copy">A verified database backup is created before deletion.</p>
+          <div class="field-grid"><div class="form-group"><label for="delete-from">From</label><input id="delete-from" type="datetime-local"></div><div class="form-group"><label for="delete-to">To</label><input id="delete-to" type="datetime-local"></div></div>
+          <label class="checkbox"><input type="checkbox" id="delete-purge-backups"> Purge old backups after verified deletion backup</label>
+          <button type="submit" id="delete-preview" class="btn-danger"><i data-lucide="trash-2"></i><span>Preview deletion</span></button>
+        </form></section>
+      </div>
+
+      <div class="save-bar"><span class="dirty" id="dirty-state">No unsaved changes</span><button type="submit" form="settings-form" class="btn-primary"><i data-lucide="save"></i><span>Save settings</span></button></div>
+    </div>
+  </div>
+</main></div>
+{{template "ui-hosts" .}}
+<script type="application/json" id="cfg">{"identities":{{json .Identities}},"csrf":{{json .CSRF}},"activeTab":{{json .ActiveTab}},"saveError":{{json .SaveError}}}</script>
+{{template "common-scripts" .}}
+<script src="/static/app/settings.js"></script>
+<script src="/static/app/credentials.js"></script>
+</body>
+</html>
